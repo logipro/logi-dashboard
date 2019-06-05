@@ -6,6 +6,11 @@ import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
 import IconButton from "@material-ui/core/IconButton";
 import MenuIcon from "@material-ui/icons/Menu";
+import Tooltip from "@material-ui/core/Tooltip";
+import HighlightIcon from "@material-ui/icons/Highlight";
+import HighlightOutlinedIcon from "@material-ui/icons/HighlightOutlined";
+import { useChangeTheme } from "../Contexts/ThemeContext";
+import { useTheme } from "@material-ui/styles";
 
 const drawerWidth = 240;
 
@@ -65,6 +70,9 @@ const useStyles = makeStyles((theme: Theme) =>
     content: {
       flexGrow: 1,
       padding: theme.spacing(3)
+    },
+    grow: {
+      flex: "1 1 auto"
     }
   })
 );
@@ -75,6 +83,14 @@ function Header(props: any) {
 
   function handleDrawerOpen() {
     setSidebarOpen(true);
+  }
+
+  const theme: Theme = useTheme();
+  const changeTheme = useChangeTheme();
+  function handleTogglePaletteType() {
+    const paletteType = theme.palette.type === "light" ? "dark" : "light";
+
+    changeTheme({ paletteType });
   }
 
   return (
@@ -99,6 +115,22 @@ function Header(props: any) {
         <Typography variant="h6" noWrap>
           LogiPro Dashboard
         </Typography>
+        <div className={classes.grow} />
+        <Tooltip title={"toggleTheme"} enterDelay={300}>
+          <IconButton
+            color="inherit"
+            onClick={handleTogglePaletteType}
+            aria-label={"toggleTheme"}
+            data-ga-event-category="AppBar"
+            data-ga-event-action="dark"
+          >
+            {theme.palette.type === "light" ? (
+              <HighlightOutlinedIcon />
+            ) : (
+              <HighlightIcon />
+            )}
+          </IconButton>
+        </Tooltip>
       </Toolbar>
     </AppBar>
   );
