@@ -11,6 +11,8 @@ import HighlightIcon from "@material-ui/icons/Highlight";
 import HighlightOutlinedIcon from "@material-ui/icons/HighlightOutlined";
 import { useChangeTheme } from "../Contexts/ThemeContext";
 import { useTheme } from "@material-ui/styles";
+import AccountCircleIcon from "@material-ui/icons/AccountCircle";
+import { useAuth } from "../Contexts/AuthContext";
 
 const drawerWidth = 240;
 
@@ -93,6 +95,8 @@ function Header(props: any) {
     changeTheme({ paletteType });
   }
 
+  const Auth: any = useAuth();
+
   return (
     <AppBar
       position="fixed"
@@ -129,6 +133,16 @@ function Header(props: any) {
             ) : (
               <HighlightIcon />
             )}
+          </IconButton>
+        </Tooltip>
+        <Tooltip title={"Login"} enterDelay={300}>
+          <IconButton
+            aria-haspopup="true"
+            color="inherit"
+            aria-label="Account Login"
+            onClick={() => Auth.showLogin()}
+          >
+            <AccountCircleIcon />
           </IconButton>
         </Tooltip>
       </Toolbar>
