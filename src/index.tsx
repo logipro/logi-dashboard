@@ -12,13 +12,13 @@ const ReactMode = USE_STRICT_MODE ? React.StrictMode : React.Fragment;
 
 ReactDOM.render(
   <ReactMode>
-    <AuthProvider>
-      <ThemeProvider>
+    <ThemeProvider>
+      <AuthProvider>
         {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
         <CssBaseline />
         <App />
-      </ThemeProvider>
-    </AuthProvider>
+      </AuthProvider>
+    </ThemeProvider>
   </ReactMode>,
   document.getElementById("root")
 );
