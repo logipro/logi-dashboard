@@ -11,6 +11,18 @@ import Divider from "@material-ui/core/Divider";
 import IconButton from "@material-ui/core/IconButton";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
+import ExpandLess from "@material-ui/icons/ExpandLess";
+import ExpandMore from "@material-ui/icons/ExpandMore";
+import { useAuth } from "../Contexts/AuthContext";
+import {
+  ListItem,
+  ListItemIcon,
+  Icon,
+  ListItemText,
+  Collapse,
+  List,
+  Link
+} from "@material-ui/core";
 
 const drawerWidth = 240;
 
@@ -70,6 +82,9 @@ const useStyles = makeStyles((theme: Theme) =>
     content: {
       flexGrow: 1,
       padding: theme.spacing(3)
+    },
+    nested: {
+      paddingLeft: theme.spacing(4)
     }
   })
 );
@@ -82,6 +97,8 @@ function Sidebar(props: any) {
   function handleDrawerClose() {
     setSidebarOpen(false);
   }
+
+  const Auth: any = useAuth();
 
   return (
     <Drawer
@@ -108,6 +125,137 @@ function Sidebar(props: any) {
         </IconButton>
       </div>
       <Divider />
+      {Auth.AccessibleApps &&
+        Auth.AccessibleApps.map((app: any) => {
+          if (
+            app.ShowInNavigationTree !== undefined &&
+            (app.ShowInNavigationTree === 1 ||
+              app.ShowInNavigationTree === true)
+          ) {
+            if (app.childApps) {
+              //it's a group
+              return (
+                <React.Fragment key={"G" + app.Application}>
+                  <ListItem
+                    button
+                    //onClick={() => this.handleClick("G" + app.Application)}
+                  >
+                    <ListItemIcon>
+                      <Icon color="primary">{app.Icon}</Icon>
+                    </ListItemIcon>
+                    <ListItemText inset primary={app.Application} />
+                    {/* {this.state.open["G" + app.Application] === undefined ? (
+                      <ExpandMore />
+                    ) : this.state.open["G" + app.Application] ? (
+                      <ExpandLess />
+                    ) : (
+                      <ExpandMore />
+                    )} */}
+                  </ListItem>
+                  <Collapse
+                    in={
+                      //this.state.open["G" + app.Application] === undefined
+                      //? false
+                      //: this.state.open["G" + app.Application]
+                      false
+                    }
+                    timeout="auto"
+                    unmountOnExit
+                  >
+                    <List component="div" disablePadding>
+                      {app.childApps.map((app: any) => {
+                        return (
+                          // <Link
+                          //   to={
+                          //     app.Path +
+                          //     `${
+                          //       app.params !== undefined && app.params !== null
+                          //         ? "/" + app.params
+                          //         : ""
+                          //     }`
+                          //   }
+                          //   key={
+                          //     app.Path +
+                          //     `${
+                          //       app.params !== undefined && app.params !== null
+                          //         ? "/" + app.params
+                          //         : ""
+                          //     }`
+                          //   }
+                          //   style={{ textDecoration: "none" }}
+                          // >
+                          <ListItem
+                            button
+                            className={classes.nested}
+                            // classes={
+                            //   this.props.OpenAppID === app.ApplicationID
+                            //     ? { root: classes.openedMenu }
+                            //     : null
+                            // }
+                          >
+                            <ListItemIcon>
+                              <Icon color="primary">{app.Icon}</Icon>
+                            </ListItemIcon>
+                            <ListItemText
+                              // classes={
+                              //   this.props.OpenAppID === app.ApplicationID
+                              //     ? { primary: classes.openedApp }
+                              //     : null
+                              // }
+                              primary={app.Application}
+                            />
+                          </ListItem>
+                        );
+                      })}
+                    </List>
+                  </Collapse>
+                </React.Fragment>
+              );
+            } else {
+              return (
+                // <Link
+                //   to={
+                //     app.Path +
+                //     `${
+                //       app.params !== undefined && app.params !== null
+                //         ? "/" + app.params
+                //         : ""
+                //     }`
+                //   }
+                //   key={
+                //     app.Path +
+                //     `${
+                //       app.params !== undefined && app.params !== null
+                //         ? "/" + app.params
+                //         : ""
+                //     }`
+                //   }
+                //   style={{ textDecoration: "none" }}
+                // >
+                <ListItem
+                  button
+                  // classes={
+                  //   this.props.OpenAppID === app.ApplicationID
+                  //     ? { root: classes.openedMenu }
+                  //     : null
+                  // }
+                >
+                  <ListItemIcon>
+                    <Icon color="primary">{app.Icon}</Icon>
+                  </ListItemIcon>
+                  <ListItemText
+                    // classes={
+                    //   this.props.OpenAppID === app.ApplicationID
+                    //     ? { primary: classes.openedApp }
+                    //     : null
+                    // }
+                    primary={app.Application}
+                  />
+                </ListItem>
+              );
+            }
+          } else return null;
+        })}
     </Drawer>
   );
 }

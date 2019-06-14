@@ -1,19 +1,11 @@
 import React, { useState } from "react";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  TextField,
-  DialogActions,
-  Button
-} from "@material-ui/core";
-import { useAsync } from "react-async";
+import LoginDialog from "../layout/LoginDialog";
 
 type AuthContextType = {
   showLogin: Function;
   hideLogin: Function;
   LoggedInUserID: Number;
+  AccessibleApps: Array<{}>;
 };
 
 const AuthContext = React.createContext<Partial<AuthContextType>>({});
@@ -24,6 +16,8 @@ export function AuthProvider(props: any) {
   const [Token, setToken] = React.useState();
   const [initialLoad, setInitialLoad] = useState(true);
   const [initialLoadFailed, setInitialLoadFailed] = useState(false);
+  const [AccessibleApps, setAccessibleApps] = useState();
+  const [loginState, setloginState] = useState("");
 
   function showLogin() {
     setLoginVisible(true);
@@ -44,12 +38,43 @@ export function AuthProvider(props: any) {
     const res = await result.json();
     setToken(res["token"]);
     setLoggedInUserID(res["userID"]);
-
     return res;
   }
 
+  async function authenticateUser(username: String, password: String) {
+    try {
+      setloginState("InProgress");
+      const headers = {
+        Accept: "application/json",
+        "Content-Type": "application/json"
+      };
+      const rawResult = await fetch(`${process.env.REACT_APP_APIURL}login`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          username: username,
+          password: password
+        })
+      });
+      if (!rawResult.ok) {
+        setloginState("Failed");
+        //reset the token so will get new guest token
+        setToken("");
+        throw new Error(rawResult.statusText);
+      }
+      const result = await rawResult.json();
+      setToken(result["token"]);
+      setLoggedInUserID(result["userID"]);
+      setloginState("Success");
+      hideLogin();
+    } catch (exception) {
+      setloginState("Failed");
+      //reset the token so will get new guest token
+      setToken("");
+    }
+  }
+
   async function getAccessibleApps() {
-    console.log(Token);
     if (!Token) {
       return;
     }
@@ -64,15 +89,18 @@ export function AuthProvider(props: any) {
         headers
       }
     );
-    if (!result.ok) throw new Error(result.statusText);
+    if (!result.ok) {
+      setInitialLoadFailed(true);
+      throw new Error(result.statusText);
+    }
     const res = await result.json();
-    console.log(res);
+    setAccessibleApps(res);
     return res;
   }
 
-  //---initial login
+  //---at initial load we will get a guest token and this will automatically cause fetching guest apps
   React.useEffect(() => {
-    async function initialTokenAndAppsLoad() {
+    async function initialTokenFetch() {
       try {
         console.log(initialLoad);
         //get guest token then get accessible (public apps) and also set initial load to false
@@ -86,7 +114,7 @@ export function AuthProvider(props: any) {
     }
     if (initialLoad) {
       try {
-        initialTokenAndAppsLoad();
+        initialTokenFetch();
       } catch (exception) {
         console.log(exception);
         setInitialLoadFailed(true);
@@ -94,9 +122,8 @@ export function AuthProvider(props: any) {
     }
   }, [initialLoad]);
 
+  //if the token changes we re fetch the accessible apps
   React.useEffect(() => {
-    console.log("second use effect");
-    console.log(Token);
     async function getApps() {
       try {
         await getAccessibleApps();
@@ -113,67 +140,22 @@ export function AuthProvider(props: any) {
   }
 
   return (
-    <AuthContext.Provider value={{ showLogin, hideLogin, LoggedInUserID }}>
-      <Dialog
-        open={LoginVisible}
-        //onClose={() => this.handleCloseDialog()}
-        aria-labelledby="login-title"
-      >
-        <DialogTitle id="flogin-title">Login</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Please enter username and password
-          </DialogContentText>
-          <TextField
-            id="username"
-            label="Username"
-            type="email"
-            autoFocus
-            margin="dense"
-            required
-            fullWidth
-            //onChange={this.handleChange}
-            //value={this.state.username}
-          />
-          <TextField
-            id="password"
-            label="Password"
-            type="password"
-            margin="dense"
-            required
-            fullWidth
-            //onChange={this.handleChange}
-            //onKeyPress={this.enterPressed}
-            //value={this.state.password}
-          />
-          {/* {this.props.LoginState === "Failed" && (
-              <DialogContentText>Login failed</DialogContentText>
-            )} */}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={hideLogin} color="primary">
-            Cancel
-          </Button>
-          <Button
-            //onClick={this.handleLogin}
-            color="primary"
-            //   disabled={
-            //     !(
-            //       this.state.username.trim().length > 0 &&
-            //       this.state.password.trim().length > 0
-            //     )
-            //   }
-          >
-            Login
-          </Button>
-          {/* {this.props.LoginState === "InProgress" && (
-              <CircularProgress
-                size={24}
-                className={this.props.classes.buttonProgress}
-              />
-            )} */}
-        </DialogActions>
-      </Dialog>
+    <AuthContext.Provider
+      value={{
+        showLogin,
+        hideLogin,
+        LoggedInUserID,
+        AccessibleApps
+      }}
+    >
+      <LoginDialog
+        LoginVisible={LoginVisible}
+        hideLogin={hideLogin}
+        authenticateUser={(username: String, password: String) =>
+          authenticateUser(username, password)
+        }
+        loginState={loginState}
+      />
       {props.children}
     </AuthContext.Provider>
   );
