@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import clsx from "clsx";
 import {
   createStyles,
@@ -20,9 +20,9 @@ import {
   Icon,
   ListItemText,
   Collapse,
-  List,
-  Link
+  List
 } from "@material-ui/core";
+import { Link as RouterLink } from "react-router-dom";
 
 const drawerWidth = 240;
 
@@ -92,10 +92,22 @@ const useStyles = makeStyles((theme: Theme) =>
 function Sidebar(props: any) {
   const classes = useStyles();
   const theme = useTheme();
-  const { sidebarOpen, setSidebarOpen } = props;
 
+  const { sidebarOpen, setSidebarOpen } = props;
   function handleDrawerClose() {
     setSidebarOpen(false);
+  }
+
+  const [openGroups, setOpenGroups] = useState<Array<string>>([]);
+  function handleGroupClick(groupName: string) {
+    let index = openGroups.indexOf(groupName);
+    if (index >= 0) {
+      // means it's already open so we remove it
+      openGroups.splice(index, 1);
+      setOpenGroups([...openGroups]);
+    } else {
+      setOpenGroups([...openGroups, groupName]);
+    }
   }
 
   const Auth: any = useAuth();
@@ -125,139 +137,114 @@ function Sidebar(props: any) {
         </IconButton>
       </div>
       <Divider />
-      {Auth.AccessibleApps &&
-        Auth.AccessibleApps.map((app: any) => {
-          if (
-            app.ShowInNavigationTree !== undefined &&
-            (app.ShowInNavigationTree === 1 ||
-              app.ShowInNavigationTree === true)
-          ) {
-            if (app.childApps) {
-              //it's a group
-              return (
-                <React.Fragment key={"G" + app.Application}>
-                  <ListItem
-                    button
-                    //onClick={() => this.handleClick("G" + app.Application)}
-                  >
-                    <ListItemIcon>
-                      <Icon color="primary">{app.Icon}</Icon>
-                    </ListItemIcon>
-                    <ListItemText inset primary={app.Application} />
-                    {/* {this.state.open["G" + app.Application] === undefined ? (
-                      <ExpandMore />
-                    ) : this.state.open["G" + app.Application] ? (
-                      <ExpandLess />
-                    ) : (
-                      <ExpandMore />
-                    )} */}
-                  </ListItem>
-                  <Collapse
-                    in={
-                      //this.state.open["G" + app.Application] === undefined
-                      //? false
-                      //: this.state.open["G" + app.Application]
-                      false
-                    }
-                    timeout="auto"
-                    unmountOnExit
-                  >
-                    <List component="div" disablePadding>
+      <List component="div" disablePadding>
+        {Auth.AccessibleApps &&
+          Auth.AccessibleApps.map((app: any) => {
+            if (
+              app.ShowInNavigationTree !== undefined &&
+              (app.ShowInNavigationTree === 1 ||
+                app.ShowInNavigationTree === true)
+            ) {
+              if (app.childApps) {
+                //it's a group
+                return (
+                  <React.Fragment key={"G" + app.Application}>
+                    <ListItem
+                      button
+                      onClick={() => handleGroupClick("G" + app.Application)}
+                    >
+                      <ListItemIcon>
+                        <Icon color="primary">{app.Icon}</Icon>
+                      </ListItemIcon>
+                      <ListItemText primary={app.Application} />
+                      {openGroups.includes("G" + app.Application) ? (
+                        <ExpandLess />
+                      ) : (
+                        <ExpandMore />
+                      )}
+                    </ListItem>
+                    <Collapse
+                      in={openGroups.includes("G" + app.Application)}
+                      timeout="auto"
+                      unmountOnExit
+                    >
                       {app.childApps.map((app: any) => {
                         return (
-                          // <Link
-                          //   to={
-                          //     app.Path +
-                          //     `${
-                          //       app.params !== undefined && app.params !== null
-                          //         ? "/" + app.params
-                          //         : ""
-                          //     }`
-                          //   }
-                          //   key={
-                          //     app.Path +
-                          //     `${
-                          //       app.params !== undefined && app.params !== null
-                          //         ? "/" + app.params
-                          //         : ""
-                          //     }`
-                          //   }
-                          //   style={{ textDecoration: "none" }}
-                          // >
-                          <ListItem
-                            button
+                          <ListItemLink
+                            to={
+                              app.Path +
+                              `${
+                                app.params !== undefined && app.params !== null
+                                  ? "/" + app.params
+                                  : ""
+                              }`
+                            }
+                            primary={app.Application}
+                            icon={app.Icon}
+                            key={
+                              app.Path +
+                              `${
+                                app.params !== undefined && app.params !== null
+                                  ? "/" + app.params
+                                  : ""
+                              }`
+                            }
                             className={classes.nested}
-                            // classes={
-                            //   this.props.OpenAppID === app.ApplicationID
-                            //     ? { root: classes.openedMenu }
-                            //     : null
-                            // }
-                          >
-                            <ListItemIcon>
-                              <Icon color="primary">{app.Icon}</Icon>
-                            </ListItemIcon>
-                            <ListItemText
-                              // classes={
-                              //   this.props.OpenAppID === app.ApplicationID
-                              //     ? { primary: classes.openedApp }
-                              //     : null
-                              // }
-                              primary={app.Application}
-                            />
-                          </ListItem>
+                          />
                         );
                       })}
-                    </List>
-                  </Collapse>
-                </React.Fragment>
-              );
-            } else {
-              return (
-                // <Link
-                //   to={
-                //     app.Path +
-                //     `${
-                //       app.params !== undefined && app.params !== null
-                //         ? "/" + app.params
-                //         : ""
-                //     }`
-                //   }
-                //   key={
-                //     app.Path +
-                //     `${
-                //       app.params !== undefined && app.params !== null
-                //         ? "/" + app.params
-                //         : ""
-                //     }`
-                //   }
-                //   style={{ textDecoration: "none" }}
-                // >
-                <ListItem
-                  button
-                  // classes={
-                  //   this.props.OpenAppID === app.ApplicationID
-                  //     ? { root: classes.openedMenu }
-                  //     : null
-                  // }
-                >
-                  <ListItemIcon>
-                    <Icon color="primary">{app.Icon}</Icon>
-                  </ListItemIcon>
-                  <ListItemText
-                    // classes={
-                    //   this.props.OpenAppID === app.ApplicationID
-                    //     ? { primary: classes.openedApp }
-                    //     : null
-                    // }
+                    </Collapse>
+                  </React.Fragment>
+                );
+              } else {
+                return (
+                  <ListItemLink
+                    to={
+                      app.Path +
+                      `${
+                        app.params !== undefined && app.params !== null
+                          ? "/" + app.params
+                          : ""
+                      }`
+                    }
                     primary={app.Application}
+                    icon={app.Icon}
+                    key={
+                      app.Path +
+                      `${
+                        app.params !== undefined && app.params !== null
+                          ? "/" + app.params
+                          : ""
+                      }`
+                    }
                   />
-                </ListItem>
-              );
-            }
-          } else return null;
-        })}
+                );
+              }
+            } else return null;
+          })}
+      </List>
     </Drawer>
   );
 }
 
 export default Sidebar;
+
+class ListItemLink extends React.Component<any, any> {
+  renderLink = React.forwardRef((itemProps: any, ref: any) => (
+    <RouterLink to={this.props.to} {...itemProps} ref={ref} />
+  ));
+
+  render() {
+    const { icon, primary } = this.props;
+    return (
+      <li>
+        <ListItem button component={this.renderLink} {...this.props}>
+          <ListItemIcon>
+            <Icon color="primary">{icon}</Icon>
+          </ListItemIcon>
+          <ListItemText primary={primary} />
+        </ListItem>
+      </li>
+    );
+  }
+}

@@ -94,8 +94,29 @@ export function AuthProvider(props: any) {
       throw new Error(result.statusText);
     }
     const res = await result.json();
-    setAccessibleApps(res);
-    return res;
+    let tempApps = res.filter(
+      (app: any) => app.ParentID && app.ParentID === -1
+    );
+    tempApps.forEach((appGroup: any) => {
+      let appsForGroup = res.filter((app: any) => {
+        return app.ParentID === appGroup.ApplicationID;
+      });
+      if (appsForGroup.length > 0) {
+        appGroup.ShowInNavigationTree = true;
+        appGroup.childApps = appsForGroup;
+      } else {
+        appGroup.ShowInNavigationTree = false; //empty group no need to display
+      }
+    });
+    //---add all other apps (with no parent)
+    tempApps.push(
+      ...res.filter((app: any) => !app.ParentID || app.ParentID === null)
+    );
+    setAccessibleApps(
+      tempApps.sort((appA: any, appB: any) => appA.AppOrder - appB.AppOrder)
+    );
+
+    return;
   }
 
   //---at initial load we will get a guest token and this will automatically cause fetching guest apps

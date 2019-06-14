@@ -6,6 +6,7 @@ import "typeface-roboto";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import { Provider as ThemeProvider } from "./framework/Contexts/ThemeContext";
 import { AuthProvider } from "./framework/Contexts/AuthContext";
+import { BrowserRouter as Router } from "react-router-dom";
 
 const USE_STRICT_MODE = false;
 const ReactMode = USE_STRICT_MODE ? React.StrictMode : React.Fragment;
@@ -16,7 +17,9 @@ ReactDOM.render(
       <AuthProvider>
         {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
         <CssBaseline />
-        <App />
+        <Router>
+          <App />
+        </Router>
       </AuthProvider>
     </ThemeProvider>
   </ReactMode>,
