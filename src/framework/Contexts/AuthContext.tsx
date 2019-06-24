@@ -6,6 +6,8 @@ type AuthContextType = {
   hideLogin: Function;
   LoggedInUserID: Number;
   AccessibleApps: Array<{}>;
+  Token: String;
+  AuthenticatedServerCall: Function;
 };
 
 const AuthContext = React.createContext<Partial<AuthContextType>>({});
@@ -119,6 +121,43 @@ export function AuthProvider(props: any) {
     return;
   }
 
+  const AuthenticatedServerCall = (
+    url: string,
+    method: string,
+    body: any = undefined,
+    successMessage: any = undefined
+  ) => {
+    console.log(body);
+    return new Promise((resolve, reject) =>
+      fetch(url, {
+        method: method,
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Token}`
+        },
+        ...(body && { body: JSON.stringify(body) })
+      }).then(response => {
+        if (response.ok) {
+          resolve(response.json());
+          if (successMessage) {
+            //toast.success(successMessage);
+          }
+        } else {
+          //console.dir(response);
+          if (response.status === 401) {
+            //unauthorized
+            //show login dialog (in case user can/wants to login)
+            //store.dispatch(toggleIsLoginDialogOpen(true));
+          }
+          reject(response.statusText);
+          //toast.error("Error :" + response.statusText);
+          //throw new Error("Something went wrong ...");
+        }
+      })
+    );
+  };
+
   //---at initial load we will get a guest token and this will automatically cause fetching guest apps
   React.useEffect(() => {
     async function initialTokenFetch() {
@@ -166,7 +205,9 @@ export function AuthProvider(props: any) {
         showLogin,
         hideLogin,
         LoggedInUserID,
-        AccessibleApps
+        AccessibleApps,
+        Token,
+        AuthenticatedServerCall: AuthenticatedServerCall
       }}
     >
       <LoginDialog
