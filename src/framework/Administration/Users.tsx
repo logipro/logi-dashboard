@@ -16,12 +16,13 @@ const Users: React.FunctionComponent<IUsersProps> = props => {
     return users;
   });
 
+  //the fetchUsers is added to list of dependency to avoid react-hooks/exhaustive-deps warning
   React.useEffect(() => {
     const getData = async () => {
       await fetchUsers();
     };
     getData();
-  }, []);
+  }, [fetchUsers]);
 
   return (
     <MaterialTable

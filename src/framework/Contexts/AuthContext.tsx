@@ -76,51 +76,6 @@ export function AuthProvider(props: any) {
     }
   }
 
-  async function getAccessibleApps() {
-    if (!Token) {
-      return;
-    }
-    const headers = {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${Token}`
-    };
-    const result = await fetch(
-      `${process.env.REACT_APP_APIURL}accessibleapps`,
-      {
-        headers
-      }
-    );
-    if (!result.ok) {
-      setInitialLoadFailed(true);
-      throw new Error(result.statusText);
-    }
-    const res = await result.json();
-    let tempApps = res.filter(
-      (app: any) => app.ParentID && app.ParentID === -1
-    );
-    tempApps.forEach((appGroup: any) => {
-      let appsForGroup = res.filter((app: any) => {
-        return app.ParentID === appGroup.ApplicationID;
-      });
-      if (appsForGroup.length > 0) {
-        appGroup.ShowInNavigationTree = true;
-        appGroup.childApps = appsForGroup;
-      } else {
-        appGroup.ShowInNavigationTree = false; //empty group no need to display
-      }
-    });
-    //---add all other apps (with no parent)
-    tempApps.push(
-      ...res.filter((app: any) => !app.ParentID || app.ParentID === null)
-    );
-    setAccessibleApps(
-      tempApps.sort((appA: any, appB: any) => appA.AppOrder - appB.AppOrder)
-    );
-
-    return;
-  }
-
   const AuthenticatedServerCall = (
     url: string,
     method: string,
@@ -185,6 +140,50 @@ export function AuthProvider(props: any) {
   //if the token changes we re fetch the accessible apps
   React.useEffect(() => {
     async function getApps() {
+      const getAccessibleApps = async function() {
+        if (!Token) {
+          return;
+        }
+        const headers = {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Token}`
+        };
+        const result = await fetch(
+          `${process.env.REACT_APP_APIURL}accessibleapps`,
+          {
+            headers
+          }
+        );
+        if (!result.ok) {
+          setInitialLoadFailed(true);
+          throw new Error(result.statusText);
+        }
+        const res = await result.json();
+        let tempApps = res.filter(
+          (app: any) => app.ParentID && app.ParentID === -1
+        );
+        tempApps.forEach((appGroup: any) => {
+          let appsForGroup = res.filter((app: any) => {
+            return app.ParentID === appGroup.ApplicationID;
+          });
+          if (appsForGroup.length > 0) {
+            appGroup.ShowInNavigationTree = true;
+            appGroup.childApps = appsForGroup;
+          } else {
+            appGroup.ShowInNavigationTree = false; //empty group no need to display
+          }
+        });
+        //---add all other apps (with no parent)
+        tempApps.push(
+          ...res.filter((app: any) => !app.ParentID || app.ParentID === null)
+        );
+        setAccessibleApps(
+          tempApps.sort((appA: any, appB: any) => appA.AppOrder - appB.AppOrder)
+        );
+
+        return;
+      };
       try {
         await getAccessibleApps();
       } catch (exception) {
