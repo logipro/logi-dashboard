@@ -13,6 +13,7 @@ import {
 } from "@material-ui/core/";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
 import { useAsyncFn } from "react-use";
+import { TableColumn, LogiTable } from "../Components/LogiTable/LogiTable";
 
 interface IUsersProps {}
 
@@ -41,9 +42,142 @@ const Users: React.FunctionComponent<IUsersProps> = props => {
     getData();
   }, [fetchUsers]);
 
+  const columnsU: TableColumn[] = [
+    {
+      header: "UserID",
+      accessor: "UserName",
+      dataType: "Number",
+      hidden: true
+    },
+    {
+      header: "Username",
+      accessor: "UserName",
+      dataType: "String"
+    },
+    {
+      header: "Email",
+      accessor: "EMail",
+      dataType: "String"
+    },
+    {
+      header: "Creation Date",
+      accessor: "CREATEDAT",
+      dataType: "DateTime"
+    },
+    {
+      header: "Active ?",
+      accessor: "IsDisabled",
+      dataType: "Boolean"
+    }
+  ];
+  const columns: TableColumn[] = [
+    {
+      header: "ID",
+      accessor: "ID",
+      dataType: "Number",
+      readOnly: true,
+      hidden: true
+    },
+    {
+      header: "Surname",
+      accessor: "Surname",
+      dataType: "String"
+    },
+    {
+      header: "DOB",
+      accessor: "DOB",
+      dataType: "Date",
+      readOnly: false
+    },
+    {
+      header: "TOB",
+      accessor: "TOB",
+      dataType: "Time",
+      readOnly: false
+    },
+    {
+      header: "Is Mental",
+      accessor: "IsMental",
+      dataType: "Boolean"
+    },
+    {
+      header: "FavNumber",
+      accessor: "FavNumber",
+      dataType: "Number"
+    },
+    {
+      header: "Date Time Sample",
+      accessor: "DateTimeSample",
+      dataType: "DateTime",
+      viewComponent: (row: any) => {
+        return <label>row["DateTimeSample"]</label>;
+      }
+    }
+  ];
+
   return (
     <>
-      <MaterialTable
+      <LogiTable
+        columns={columnsU}
+        keyAccessor="UserID"
+        data={fetchUsers}
+        allowSelection={false}
+        addNewRecord={(newData: any) => {
+          if (!newData.UserName || !newData.EMail) {
+            return Promise.reject("Please fill all required fields");
+          }
+          return Auth.AuthenticatedServerCall(
+            `${process.env.REACT_APP_APIURL}security/users`,
+            "POST",
+            {
+              Insert: `(Username,Email,createdBy,CreatedAt,IsDisabled)  SELECT '${newData.UserName.trim()}' ,  '${newData.EMail.trim()}'
+                , ${Auth.LoggedInUserID}, datetime("now"),${
+                newData.IsDisabled ? newData.IsDisabled : 0
+              } `
+            }
+          )
+            .then(() => fetchUsers())
+            .catch((error: any) => {
+              console.log(error);
+              return false;
+            });
+        }}
+        editRecord={(oldData: any, newData: any): Promise<boolean> => {
+          //go through the new Data and create the update statement
+          let updateStatement: String = "";
+          for (let key in newData) {
+            if (newData[key] !== oldData[key]) {
+              updateStatement += `${key} = "${newData[key]}" ,`;
+            }
+          }
+          if (updateStatement.length > 0) {
+            //remove the last comma
+            updateStatement = updateStatement.substring(
+              0,
+              updateStatement.length - 1
+            );
+            return Auth.AuthenticatedServerCall(
+              `${process.env.REACT_APP_APIURL}security/users`,
+              "PUT",
+              {
+                UserID: oldData.UserID,
+                Update: updateStatement
+              }
+            )
+              .then((r: any) => {
+                console.log("in then");
+                console.log(r);
+                return Promise.resolve(true);
+              })
+              .catch((error: any) => {
+                console.log(error);
+                return Promise.resolve(false);
+              });
+          }
+          return Promise.resolve(true);
+        }}
+      />
+      {/* <MaterialTable
         title="Users"
         isLoading={userFetchState.loading}
         options={{
@@ -159,7 +293,7 @@ const Users: React.FunctionComponent<IUsersProps> = props => {
               });
           }
         }}
-      />
+      /> */}
       <Dialog
         fullScreen={fullScreen}
         open={passwordDialogOpen}
