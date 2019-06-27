@@ -42,7 +42,8 @@ export type DataType =
   | "Date"
   | "DateTime"
   | "Time"
-  | "Boolean";
+  | "Boolean"
+  | "ActionColumn";
 
 export interface TableColumn {
   header: string;
@@ -85,6 +86,7 @@ export function LogiTable(props: LogiTableProps) {
   const [addingNewRecord, setAddingNewRecord] = useState(false);
 
   useEffect(() => {
+    console.log("setting data");
     //get data if passed as promise
     if (typeof props.data === "function") {
       let fetchData: () => Promise<Array<{}>> = props.data as () => Promise<
@@ -97,7 +99,7 @@ export function LogiTable(props: LogiTableProps) {
           setIsLoading(false);
         })
         .catch((c: any) => {
-          console.log(c);
+          console.log("error: " + c);
           setIsLoading(false);
           setIsError(true);
         });
@@ -108,6 +110,9 @@ export function LogiTable(props: LogiTableProps) {
 
   function handleChangePage(event: unknown, newPage: number) {
     setPage(newPage);
+    console.log(
+      data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+    );
   }
 
   function handleChangeRowsPerPage(event: React.ChangeEvent<HTMLInputElement>) {
@@ -138,6 +143,25 @@ export function LogiTable(props: LogiTableProps) {
                 allowDelete={props.deleteRecord ? true : false}
               />
               <TableBody>
+                {addingNewRecord && (
+                  <LogiDataRow
+                    key={-1}
+                    row={() => {
+                      let newRecord: any = {};
+                      props.columns.forEach((col: TableColumn) => {
+                        newRecord[col.accessor] = "";
+                      });
+                      return newRecord;
+                    }}
+                    index={-1}
+                    columns={props.columns}
+                    allowSelection={false}
+                    addingNewRowCanceled={() => {
+                      setAddingNewRecord(false);
+                    }}
+                    addNewRecord={props.addNewRecord}
+                  />
+                )}
                 {isLoading || isError ? (
                   <TableRow>
                     <TableCell
@@ -162,6 +186,7 @@ export function LogiTable(props: LogiTableProps) {
                   </TableRow>
                 ) : (
                   data && //making sure data is available
+                  data.length > 0 &&
                   data
                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                     .map((row: any, index: number) => {
@@ -172,11 +197,7 @@ export function LogiTable(props: LogiTableProps) {
                           index={index}
                           columns={props.columns}
                           allowSelection={props.allowSelection}
-                          addingNewRowCanceled={() => {
-                            console.log("TODO:");
-                          }}
                           editRecord={props.editRecord}
-                          addNewRecord={props.addNewRecord}
                           deleteRecord={props.deleteRecord}
                         />
                       );

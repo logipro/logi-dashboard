@@ -24,7 +24,6 @@ export function LogiTableHeader(props: {
 
   const [order, setOrder] = React.useState<Order>("asc");
   const [orderBy, setOrderBy] = React.useState("");
-  const [numSelected, setNumSelected] = useState(0);
 
   const createSortHandler = (clickedColumn: TableColumn) => (
     event: React.MouseEvent<unknown>
@@ -60,24 +59,24 @@ export function LogiTableHeader(props: {
             ) : null}
           </TableCell>
         ) : null}
-        {columns.map(row =>
-          row.hidden ? null : (
+        {columns.map(col =>
+          col.hidden ? null : (
             <TableCell
-              key={row.accessor}
-              align={row.dataType === "Number" ? "right" : "left"}
-              padding={row.disablePadding ? "none" : "default"}
-              sortDirection={orderBy === row.header ? order : false}
+              key={col.accessor}
+              align={col.dataType === "Number" ? "right" : "left"}
+              padding={col.disablePadding ? "none" : "default"}
+              sortDirection={orderBy === col.header ? order : false}
             >
-              {props.allowSort ? (
+              {props.allowSort && !(col.dataType === "ActionColumn") ? (
                 <TableSortLabel
-                  active={orderBy === row.header}
+                  active={orderBy === col.header}
                   direction={order}
-                  onClick={createSortHandler(row)}
+                  onClick={createSortHandler(col)}
                 >
-                  {row.header}
+                  {col.header}
                 </TableSortLabel>
               ) : (
-                row.header
+                col.header
               )}
             </TableCell>
           )

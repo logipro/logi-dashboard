@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import TableRow from "@material-ui/core/TableRow";
 import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
@@ -38,9 +38,7 @@ export function LogiDataRow(props: {
   addNewRecord?: (newRow: any) => Promise<boolean>;
   editRecord?: (oldRow: any, newRow: any) => Promise<boolean>;
   deleteRecord?: (oldRow: any) => Promise<boolean>;
-  newlyAdded?: boolean;
-  addingNewRow?: boolean;
-  addingNewRowCanceled: () => void;
+  addingNewRowCanceled?: () => void;
 }) {
   const allowEdit = props.editRecord ? true : false;
   const allowAddNew = props.addNewRecord ? true : false;
@@ -55,8 +53,12 @@ export function LogiDataRow(props: {
     undefined
   );
   const [editMode, setEditMode] = useState(false);
+  const [newlyAdded, setNewlyAdded] = useState(false);
 
   const [row, setRow] = useState(props.row);
+  useEffect(() => {
+    setRow(props.row);
+  }, [props.row]);
   function changeValue(value: any, columnName: string) {
     var editedRow = { ...row };
     editedRow[columnName] = value;
@@ -98,7 +100,7 @@ export function LogiDataRow(props: {
           />
         </TableCell>
       ) : null}
-      {props.newlyAdded ? (
+      {newlyAdded ? (
         <TableCell>New</TableCell>
       ) : deleted ? (
         <TableCell>DELETED</TableCell>
@@ -119,13 +121,29 @@ export function LogiDataRow(props: {
             }}
           />
         </TableCell>
-      ) : editMode || props.addingNewRow ? (
+      ) : editMode || props.addNewRecord ? (
         <TableCell padding={"checkbox"}>
           <CommitButton
             onExecute={() => {
-              if (props.addingNewRow) {
-                console.log("TODO: add handler");
+              if (props.addNewRecord) {
+                setActionInProgress(true);
+                props
+                  .addNewRecord(row)
+                  .then(result => {
+                    setactionSuccess(result);
+                    setActionInProgress(false);
+                    setEditMode(false);
+                    setNewlyAdded(true);
+                  })
+                  .catch(e => {
+                    console.log(e);
+                    setactionSuccess(false);
+                    setActionInProgress(false);
+                    setEditMode(false);
+                    resetRow();
+                  });
               } else if (props.editRecord) {
+                setActionInProgress(true);
                 props
                   .editRecord(props.row, row)
                   .then(result => {
@@ -145,8 +163,8 @@ export function LogiDataRow(props: {
           />
           <CancelButton
             onExecute={() => {
-              if (props.addingNewRow) {
-                props.addingNewRowCanceled();
+              if (props.addNewRecord) {
+                props.addingNewRowCanceled && props.addingNewRowCanceled();
               } else {
                 //reset the row to original row
                 setEditMode(false);
@@ -194,7 +212,7 @@ export function LogiDataRow(props: {
                       changeValue(newValue, c.accessor)
                     }
                     dataRow={row}
-                    editMode={editMode}
+                    editMode={editMode || (props.addNewRecord && !newlyAdded)}
                   />
                 )}
               </TableCell>
@@ -211,7 +229,7 @@ export function LogiDataRow(props: {
                       changeValue(newValue, c.accessor)
                     }
                     dataRow={row}
-                    editMode={editMode}
+                    editMode={editMode || (props.addNewRecord && !newlyAdded)}
                   />
                 )}
               </TableCell>
