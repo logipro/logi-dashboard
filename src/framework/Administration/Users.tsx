@@ -1,19 +1,18 @@
 import React, { useState } from "react";
-import MaterialTable from "material-table";
 import { useAuth } from "../Contexts/AuthContext";
 import {
-  Checkbox,
   Dialog,
   DialogTitle,
   DialogContent,
   TextField,
   DialogActions,
   Button,
-  useTheme
+  useTheme,
+  IconButton
 } from "@material-ui/core/";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
-import { useAsyncFn } from "react-use";
 import { TableColumn, LogiTable } from "../Components/LogiTable/LogiTable";
+import Fingerprint from "@material-ui/icons/Fingerprint";
 
 interface IUsersProps {}
 
@@ -26,28 +25,22 @@ const Users: React.FunctionComponent<IUsersProps> = props => {
   const [selectedUserID, setSelectedUserID] = useState();
   //----
   const Auth: any = useAuth();
-  const [userFetchState, fetchUsers] = useAsyncFn(async () => {
+
+  async function fetchUsers() {
     let users = await Auth.AuthenticatedServerCall(
       `${process.env.REACT_APP_APIURL}security/users`,
       "GET"
     );
     return users;
-  });
-
-  //the fetchUsers is added to list of dependency to avoid react-hooks/exhaustive-deps warning
-  React.useEffect(() => {
-    const getData = async () => {
-      await fetchUsers();
-    };
-    getData();
-  }, [fetchUsers]);
+  }
 
   const columnsU: TableColumn[] = [
     {
       header: "UserID",
-      accessor: "UserName",
+      accessor: "UserID",
       dataType: "Number",
-      hidden: true
+      hidden: false,
+      readOnly: true
     },
     {
       header: "Username",
@@ -65,52 +58,27 @@ const Users: React.FunctionComponent<IUsersProps> = props => {
       dataType: "DateTime"
     },
     {
-      header: "Active ?",
+      header: "Is Disabled",
       accessor: "IsDisabled",
       dataType: "Boolean"
-    }
-  ];
-  const columns: TableColumn[] = [
-    {
-      header: "ID",
-      accessor: "ID",
-      dataType: "Number",
-      readOnly: true,
-      hidden: true
     },
     {
-      header: "Surname",
-      accessor: "Surname",
-      dataType: "String"
-    },
-    {
-      header: "DOB",
-      accessor: "DOB",
-      dataType: "Date",
-      readOnly: false
-    },
-    {
-      header: "TOB",
-      accessor: "TOB",
-      dataType: "Time",
-      readOnly: false
-    },
-    {
-      header: "Is Mental",
-      accessor: "IsMental",
-      dataType: "Boolean"
-    },
-    {
-      header: "FavNumber",
-      accessor: "FavNumber",
-      dataType: "Number"
-    },
-    {
-      header: "Date Time Sample",
-      accessor: "DateTimeSample",
-      dataType: "DateTime",
-      viewComponent: (row: any) => {
-        return <label>row["DateTimeSample"]</label>;
+      header: "Actions",
+      accessor: "",
+      dataType: "ActionColumn",
+      viewComponent: row => {
+        return (
+          <IconButton
+            onClick={(event: any) => {
+              console.log(row);
+              setSelectedUserID(row.UserID);
+              setpasswordDialogOpen(true);
+            }}
+            title="reset password"
+          >
+            <Fingerprint />
+          </IconButton>
+        );
       }
     }
   ];
@@ -118,6 +86,8 @@ const Users: React.FunctionComponent<IUsersProps> = props => {
   return (
     <>
       <LogiTable
+        dense={true}
+        allowSort={true}
         columns={columnsU}
         keyAccessor="UserID"
         data={fetchUsers}
@@ -136,7 +106,9 @@ const Users: React.FunctionComponent<IUsersProps> = props => {
               } `
             }
           )
-            .then(() => fetchUsers())
+            .then((r: any) => {
+              return true;
+            })
             .catch((error: any) => {
               console.log(error);
               return false;
@@ -165,13 +137,11 @@ const Users: React.FunctionComponent<IUsersProps> = props => {
               }
             )
               .then((r: any) => {
-                console.log("in then");
-                console.log(r);
-                return Promise.resolve(true);
+                return true;
               })
               .catch((error: any) => {
                 console.log(error);
-                return Promise.resolve(false);
+                return false;
               });
           }
           return Promise.resolve(true);
@@ -346,16 +316,17 @@ const Users: React.FunctionComponent<IUsersProps> = props => {
                   password: newPassword
                 }
               )
-                .then(() => {
+                .then((r: any) => {
+                  console.log(r);
                   setNewPassword("");
                   setRepeatPassword("");
                   setSelectedUserID(undefined);
+                  setpasswordDialogOpen(false);
                 })
                 .catch((error: any) => {
                   console.log(error);
                   return undefined;
                 });
-              setpasswordDialogOpen(false);
             }}
             color="primary"
             autoFocus
