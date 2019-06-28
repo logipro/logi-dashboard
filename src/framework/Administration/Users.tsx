@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../Contexts/AuthContext";
 import {
   Dialog,
@@ -8,24 +8,32 @@ import {
   DialogActions,
   Button,
   useTheme,
-  IconButton
+  IconButton,
+  Paper,
+  Avatar,
+  Chip
 } from "@material-ui/core/";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
-import { TableColumn, LogiTable } from "../Components/LogiTable/LogiTable";
+import { TableColumn, LogiTable } from "../Components/logi-table"; //"logi-table";
 import Fingerprint from "@material-ui/icons/Fingerprint";
+import GroupWork from "@material-ui/icons/GroupWork";
+import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
+import RemoveCircle from "@material-ui/icons/RemoveCircle";
+import AddCircle from "@material-ui/icons/AddCircle";
+import CircularProgress from "@material-ui/core/CircularProgress";
 
 interface IUsersProps {}
 
 const Users: React.FunctionComponent<IUsersProps> = props => {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
-  const [passwordDialogOpen, setpasswordDialogOpen] = React.useState(false);
+  const Auth: any = useAuth();
+  const [passwordDialogOpen, setPasswordDialogOpen] = React.useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
   const [selectedUserID, setSelectedUserID] = useState();
+  const [rolesDialogOpen, setRolesDialogOpen] = useState(false);
   //----
-  const Auth: any = useAuth();
-
   async function fetchUsers() {
     let users = await Auth.AuthenticatedServerCall(
       `${process.env.REACT_APP_APIURL}security/users`,
@@ -33,6 +41,10 @@ const Users: React.FunctionComponent<IUsersProps> = props => {
     );
     return users;
   }
+  //----Have to memoize this value because otherwise on every render
+  //---the component thinks the value has changed
+  const memoizedFetchUser = useCallback(fetchUsers, []);
+  //----
 
   const columnsU: TableColumn[] = [
     {
@@ -68,16 +80,26 @@ const Users: React.FunctionComponent<IUsersProps> = props => {
       dataType: "ActionColumn",
       viewComponent: row => {
         return (
-          <IconButton
-            onClick={(event: any) => {
-              console.log(row);
-              setSelectedUserID(row.UserID);
-              setpasswordDialogOpen(true);
-            }}
-            title="reset password"
-          >
-            <Fingerprint />
-          </IconButton>
+          <>
+            <IconButton
+              onClick={(event: any) => {
+                setSelectedUserID(row.UserID);
+                setPasswordDialogOpen(true);
+              }}
+              title="reset password"
+            >
+              <Fingerprint />
+            </IconButton>
+            <IconButton
+              onClick={(event: any) => {
+                setSelectedUserID(row.UserID);
+                setRolesDialogOpen(true);
+              }}
+              title="reset password"
+            >
+              <GroupWork />
+            </IconButton>
+          </>
         );
       }
     }
@@ -90,7 +112,7 @@ const Users: React.FunctionComponent<IUsersProps> = props => {
         allowSort={true}
         columns={columnsU}
         keyAccessor="UserID"
-        data={fetchUsers}
+        data={memoizedFetchUser}
         allowSelection={false}
         addNewRecord={(newData: any) => {
           if (!newData.UserName || !newData.EMail) {
@@ -147,127 +169,10 @@ const Users: React.FunctionComponent<IUsersProps> = props => {
           return Promise.resolve(true);
         }}
       />
-      {/* <MaterialTable
-        title="Users"
-        isLoading={userFetchState.loading}
-        options={{
-          search: true
-        }}
-        columns={[
-          {
-            title: "UserID",
-            field: "UserName",
-            hidden: true
-          },
-          {
-            title: "Username",
-            field: "UserName"
-          },
-          {
-            title: "Email",
-            field: "EMail"
-          },
-          {
-            title: "Creation Date",
-            field: "CREATEDAT",
-            editable: "never"
-          },
-          {
-            title: "Active ?",
-            field: "IsDisabled",
-            render: (rowData: any) => {
-              return (
-                <Checkbox checked={rowData.IsDisabled === 1 ? false : true} />
-              );
-            },
-            editComponent: (props: any) => {
-              return (
-                <Checkbox
-                  checked={props.value === 1 ? false : true}
-                  onChange={e => {
-                    props.onChange(e.target.checked ? 0 : 1);
-                  }}
-                />
-              );
-            }
-          }
-        ]}
-        data={userFetchState.value}
-        actions={[
-          {
-            icon: "fingerprint",
-            tooltip: "Reset Password",
-            onClick: (event, rowData) => {
-              setSelectedUserID(rowData.UserID);
-              setpasswordDialogOpen(true);
-            }
-          },
-          {
-            icon: "group_work",
-            tooltip: "Add/Remove Roles",
-            onClick: (event, rowData) => {
-              setSelectedUserID(rowData.UserID);
-              setpasswordDialogOpen(true);
-            }
-          }
-        ]}
-        editable={{
-          onRowUpdate: (newData: any, oldData: any) => {
-            //go through the new Data and create the update statement
-            let updateStatement: String = "";
-            for (let key in newData) {
-              if (newData[key] !== oldData[key]) {
-                updateStatement += `${key} = "${newData[key]}" ,`;
-              }
-            }
-            if (updateStatement.length > 0) {
-              //remove the last comma
-              updateStatement = updateStatement.substring(
-                0,
-                updateStatement.length - 1
-              );
-              return Auth.AuthenticatedServerCall(
-                `${process.env.REACT_APP_APIURL}security/users`,
-                "PUT",
-                {
-                  UserID: oldData.UserID,
-                  Update: updateStatement
-                }
-              )
-                .then(() => fetchUsers())
-                .catch((error: any) => {
-                  console.log(error);
-                  return Promise.resolve("something went wrong");
-                });
-            }
-            return Promise.resolve("nothing to change");
-          },
-          onRowAdd: (newData: any) => {
-            if (!newData.UserName || !newData.EMail) {
-              return Promise.reject("Please fill all required fields");
-            }
-            return Auth.AuthenticatedServerCall(
-              `${process.env.REACT_APP_APIURL}security/users`,
-              "POST",
-              {
-                Insert: `(Username,Email,createdBy,CreatedAt,IsDisabled)  SELECT '${newData.UserName.trim()}' ,  '${newData.EMail.trim()}'
-                  , ${Auth.LoggedInUserID}, datetime("now"),${
-                  newData.IsDisabled ? newData.IsDisabled : 0
-                } `
-              }
-            )
-              .then(() => fetchUsers())
-              .catch((error: any) => {
-                console.log(error);
-                return undefined;
-              });
-          }
-        }}
-      /> */}
       <Dialog
         fullScreen={fullScreen}
         open={passwordDialogOpen}
-        onClose={() => setpasswordDialogOpen(false)}
+        onClose={() => setPasswordDialogOpen(false)}
         aria-labelledby="responsive-dialog-title"
       >
         <DialogTitle id="responsive-dialog-title">
@@ -298,9 +203,10 @@ const Users: React.FunctionComponent<IUsersProps> = props => {
         <DialogActions>
           <Button
             onClick={() => {
-              setpasswordDialogOpen(false);
+              setPasswordDialogOpen(false);
               setNewPassword("");
               setRepeatPassword("");
+              setSelectedUserID(undefined);
             }}
             color="secondary"
           >
@@ -317,11 +223,10 @@ const Users: React.FunctionComponent<IUsersProps> = props => {
                 }
               )
                 .then((r: any) => {
-                  console.log(r);
                   setNewPassword("");
                   setRepeatPassword("");
                   setSelectedUserID(undefined);
-                  setpasswordDialogOpen(false);
+                  setPasswordDialogOpen(false);
                 })
                 .catch((error: any) => {
                   console.log(error);
@@ -336,8 +241,148 @@ const Users: React.FunctionComponent<IUsersProps> = props => {
           </Button>
         </DialogActions>
       </Dialog>
+      {rolesDialogOpen ? (
+        <UserRoleDialog
+          fullScreen={fullScreen}
+          setRolesDialogOpen={setRolesDialogOpen}
+          selectedUserID={selectedUserID}
+          setSelectedUserID={setSelectedUserID}
+          Auth={Auth}
+        />
+      ) : null}
     </>
   );
 };
 
 export default Users;
+
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    root: {
+      display: "flex",
+      justifyContent: "center",
+      flexWrap: "wrap",
+      padding: theme.spacing(2),
+      minWidth: 300,
+      minHeight: 300
+    },
+    chip: {
+      margin: theme.spacing(2)
+    }
+  })
+);
+
+const UserRoleDialog = function(props: {
+  fullScreen: boolean;
+  setRolesDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  selectedUserID: any;
+  setSelectedUserID: React.Dispatch<any>;
+  Auth: any;
+}) {
+  const classes = useStyles();
+  const [userRoles, setUserRoles] = useState();
+  const [isLoadingRoles, setIsLoadingRoles] = useState(false);
+  const [loadingRolesError, setLoadingRolesError] = useState(false);
+  const getUsersRoles = function() {
+    var url = `${process.env.REACT_APP_APIURL}security/roles/${
+      props.selectedUserID
+    }`;
+    setIsLoadingRoles(true);
+    props.Auth.AuthenticatedServerCall(url, "GET")
+      .then((userRoles: any) => {
+        setUserRoles(userRoles);
+        setIsLoadingRoles(false);
+      })
+      .catch((error: any) => {
+        setUserRoles(undefined);
+        setIsLoadingRoles(false);
+        setLoadingRolesError(true);
+      });
+  };
+
+  useEffect(() => {
+    if (props.selectedUserID >= 0) {
+      getUsersRoles();
+    }
+  }, [props.selectedUserID]);
+
+  function modifyUsersRole(userID: number, roleID: number, isAdd: boolean) {
+    setIsLoadingRoles(true);
+    var url = `${process.env.REACT_APP_APIURL}security/modifyUserRoles`;
+    props.Auth.AuthenticatedServerCall(
+      url,
+      "POST",
+      {
+        userID: `${userID}`,
+        roleID: `${roleID}`,
+        isAdd: `${isAdd}`
+      },
+      "Role Updated Successfully"
+    )
+      .then((response: any) => {})
+      .catch((error: any) => {
+        setLoadingRolesError(true);
+      })
+      .then(() => {
+        setIsLoadingRoles(false);
+        getUsersRoles();
+      });
+  }
+
+  return (
+    <Dialog
+      fullScreen={props.fullScreen}
+      open={true}
+      onClose={() => props.setRolesDialogOpen(false)}
+      aria-labelledby="responsive-dialog-title"
+    >
+      <DialogTitle id="responsive-dialog-title">
+        {"Change User's Roles"}
+      </DialogTitle>
+      <DialogContent>
+        <Paper className={classes.root}>
+          {isLoadingRoles ? (
+            <CircularProgress size={30} />
+          ) : userRoles !== undefined ? (
+            userRoles.map((data: any) => {
+              return (
+                <Chip
+                  key={data.RoleID}
+                  label={data.Role}
+                  className={classes.chip}
+                  color={data.IsUsersRole ? "primary" : "secondary"}
+                  avatar={
+                    <Avatar>{(data.Role + "xx").substring(0, 2)} </Avatar>
+                  }
+                  variant="outlined"
+                  onDelete={() => {
+                    modifyUsersRole(
+                      props.selectedUserID,
+                      data.RoleID,
+                      !data.IsUsersRole
+                    );
+                  }}
+                  deleteIcon={
+                    data.IsUsersRole ? <RemoveCircle /> : <AddCircle />
+                  }
+                />
+              );
+            })
+          ) : null}
+        </Paper>
+      </DialogContent>
+      <DialogActions>
+        <Button
+          onClick={() => {
+            props.setRolesDialogOpen(false);
+            props.setSelectedUserID(undefined);
+            setUserRoles(undefined);
+          }}
+          color="secondary"
+        >
+          Done
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};

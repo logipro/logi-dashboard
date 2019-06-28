@@ -1,6 +1,6 @@
 import React from "react";
 import TextField from "@material-ui/core/TextField";
-import DateFnsUtils from "@date-io/date-fns";
+import DateFnsUtils from "@date-io/moment";
 import {
   DatePicker,
   TimePicker,
@@ -10,7 +10,7 @@ import {
 import Checkbox from "@material-ui/core/Checkbox";
 import ArrowForward from "@material-ui/icons/ArrowForward";
 import ArrowBack from "@material-ui/icons/ArrowBack";
-import { TableColumn } from "./LogiTable";
+import { TableColumn } from "./index";
 
 interface IEditableTableCell {
   column: TableColumn;

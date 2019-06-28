@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 import TableCell from "@material-ui/core/TableCell";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import TableSortLabel from "@material-ui/core/TableSortLabel";
 import Checkbox from "@material-ui/core/Checkbox";
-import { Order, TableColumn } from "./LogiTable";
+import { Order, TableColumn } from "./index";
 import AddIcon from "@material-ui/icons/Add";
 import { IconButton } from "@material-ui/core";
 
@@ -63,7 +63,7 @@ export function LogiTableHeader(props: {
           col.hidden ? null : (
             <TableCell
               key={col.accessor}
-              align={col.dataType === "Number" ? "right" : "left"}
+              //align={col.dataType === 'Number' ? 'right' : 'left'}
               padding={col.disablePadding ? "none" : "default"}
               sortDirection={orderBy === col.header ? order : false}
             >

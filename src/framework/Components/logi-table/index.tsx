@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useReducer } from "react";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
@@ -105,10 +105,11 @@ export function LogiTable(props: LogiTableProps) {
         });
     } else {
       setData(props.data);
+      setIsLoading(false);
     }
   }, [props.data]);
 
-  function handleChangePage(event: unknown, newPage: number) {
+  function handleChangePage(_event: unknown, newPage: number) {
     setPage(newPage);
     console.log(
       data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
@@ -199,6 +200,7 @@ export function LogiTable(props: LogiTableProps) {
                           allowSelection={props.allowSelection}
                           editRecord={props.editRecord}
                           deleteRecord={props.deleteRecord}
+                          addNewRecord={props.addNewRecord}
                         />
                       );
                     })
@@ -219,7 +221,7 @@ export function LogiTable(props: LogiTableProps) {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={data.length}
+            count={data ? data.length : 0}
             rowsPerPage={rowsPerPage}
             page={page}
             backIconButtonProps={{

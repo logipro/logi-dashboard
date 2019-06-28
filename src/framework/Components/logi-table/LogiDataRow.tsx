@@ -9,12 +9,9 @@ import TableCell from "@material-ui/core/TableCell";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Button from "@material-ui/core/Button";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
-import { TableColumn } from "./LogiTable";
+import { TableColumn } from "./index";
 import { Checkbox } from "@material-ui/core";
 import EditableTableCell from "./EditableTableCell";
-
-//import { Value2SQLValue } from "./Value2SQLValue";
-//import EditableTableCell from "./EditableTableCell";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -40,10 +37,11 @@ export function LogiDataRow(props: {
   deleteRecord?: (oldRow: any) => Promise<boolean>;
   addingNewRowCanceled?: () => void;
 }) {
+  const classes = useStyles();
   const allowEdit = props.editRecord ? true : false;
   const allowAddNew = props.addNewRecord ? true : false;
   const allowDelete = props.deleteRecord ? true : false;
-  const classes = useStyles();
+
   const { columns, index } = props;
   const labelId = `enhanced-table-checkbox-${index}`;
 
@@ -68,7 +66,7 @@ export function LogiDataRow(props: {
     setRow(props.row);
   }
 
-  const [selected, setSelected] = useState<string[]>([]);
+  /*const [selected, setSelected] = useState<string[]>([]);
 
   const isSelected = (name: string) => selected.indexOf(name) !== -1;
   function handleClick(name: string) {
@@ -88,7 +86,7 @@ export function LogiDataRow(props: {
       );
     }
     setSelected(newSelected);
-  }
+  }*/
 
   return (
     <TableRow className={classes.rowStyle}>
