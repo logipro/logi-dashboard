@@ -1,17 +1,57 @@
 import React, { useState, useEffect } from "react";
 import TableRow from "@material-ui/core/TableRow";
-import DeleteIcon from "@material-ui/icons/Delete";
-import EditIcon from "@material-ui/icons/Edit";
-import SaveIcon from "@material-ui/icons/Save";
-import CancelIcon from "@material-ui/icons/Cancel";
-import IconButton from "@material-ui/core/IconButton";
 import TableCell from "@material-ui/core/TableCell";
-import CircularProgress from "@material-ui/core/CircularProgress";
-import Button from "@material-ui/core/Button";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import { TableColumn } from "./index";
 import { Checkbox } from "@material-ui/core";
 import EditableTableCell from "./EditableTableCell";
+
+/**
+ *
+ *
+ * @export
+ * @interface rowActionsAndStates
+ */
+export interface rowActionsAndStates {
+  /**
+   *Call this function to put the row in edit mode status
+   * @memberof rowActionsAndStates
+   */
+  enterEditMode: () => void;
+
+  /**
+   *Call this function to cancel the edit mode and return the row to reset status
+   * @memberof rowActionsAndStates
+   */
+  discardEditMode: () => void;
+
+  /**
+   *true if the row is in edit mode
+   * @type {boolean}
+   * @memberof rowActionsAndStates
+   */
+  editMode: boolean;
+  /**
+   * Original row data
+   * @type {*}
+   * @memberof rowActionsAndStates
+   */
+  oldData: any;
+  /**
+   * New Row Data (if it's modified)
+   * @type {*}
+   * @memberof rowActionsAndStates
+   */
+  newData: any;
+  /**
+   * Use this to set the row Data for example when a row is edited successfully and you want to replace the data
+   * without refreshing the whole content of the grid
+   * Note that this will set the the data in state and not whole table prop. i.e. if the page changes the row will reset
+   * BETTER OPTION IS TO REFRESH THE DATA FOR THE WHOLE GRID
+   * @memberof rowActionsAndStates
+   */
+  setData: (data: any) => void;
+}
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -38,25 +78,15 @@ export function LogiDataRow(props: {
   addingNewRowCanceled?: () => void;
 }) {
   const classes = useStyles();
-  const allowEdit = props.editRecord ? true : false;
-  const allowAddNew = props.addNewRecord ? true : false;
-  const allowDelete = props.deleteRecord ? true : false;
-
   const { columns, index } = props;
   const labelId = `enhanced-table-checkbox-${index}`;
-
-  const [deleted, setDeleted] = useState(false);
-  const [actionInProgress, setActionInProgress] = useState(false);
-  const [actionSuccess, setactionSuccess] = useState<boolean | undefined>(
-    undefined
-  );
   const [editMode, setEditMode] = useState(false);
-  const [newlyAdded, setNewlyAdded] = useState(false);
 
   const [row, setRow] = useState(props.row);
   useEffect(() => {
     setRow(props.row);
   }, [props.row]);
+
   function changeValue(value: any, columnName: string) {
     var editedRow = { ...row };
     editedRow[columnName] = value;
@@ -65,6 +95,23 @@ export function LogiDataRow(props: {
   function resetRow() {
     setRow(props.row);
   }
+
+  let rowStateAndAction: rowActionsAndStates = {
+    enterEditMode: () => {
+      setEditMode(true);
+    },
+    discardEditMode: () => {
+      setEditMode(false);
+      resetRow();
+    },
+    editMode: editMode,
+    oldData: props.row,
+    newData: row, // this will be modified data (in case user changes values)
+    setData: (newData: any) => {
+      console.log(newData);
+      setRow(newData);
+    }
+  };
 
   /*const [selected, setSelected] = useState<string[]>([]);
 
@@ -98,111 +145,20 @@ export function LogiDataRow(props: {
           />
         </TableCell>
       ) : null}
-      {newlyAdded ? (
-        <TableCell>New</TableCell>
-      ) : deleted ? (
-        <TableCell>DELETED</TableCell>
-      ) : actionInProgress ? (
-        <TableCell>
-          <CircularProgress size={30} className={classes.progress} />
-        </TableCell>
-      ) : actionSuccess && !actionSuccess ? (
-        <TableCell>
-          <FailedButton
-            onExecute={() => {
-              //reset the row to original row
-              setEditMode(false);
-              setactionSuccess(undefined);
-              setActionInProgress(false);
-              setDeleted(false);
-              resetRow();
-            }}
-          />
-        </TableCell>
-      ) : editMode || props.addNewRecord ? (
-        <TableCell padding={"checkbox"}>
-          <CommitButton
-            onExecute={() => {
-              if (props.addNewRecord) {
-                setActionInProgress(true);
-                props
-                  .addNewRecord(row)
-                  .then(result => {
-                    setactionSuccess(result);
-                    setActionInProgress(false);
-                    setEditMode(false);
-                    setNewlyAdded(true);
-                  })
-                  .catch(e => {
-                    console.log(e);
-                    setactionSuccess(false);
-                    setActionInProgress(false);
-                    setEditMode(false);
-                    resetRow();
-                  });
-              } else if (props.editRecord) {
-                setActionInProgress(true);
-                props
-                  .editRecord(props.row, row)
-                  .then(result => {
-                    setactionSuccess(result);
-                    setActionInProgress(false);
-                    setEditMode(false);
-                  })
-                  .catch(e => {
-                    console.log(e);
-                    setactionSuccess(false);
-                    setActionInProgress(false);
-                    setEditMode(false);
-                    resetRow();
-                  });
-              }
-            }}
-          />
-          <CancelButton
-            onExecute={() => {
-              if (props.addNewRecord) {
-                props.addingNewRowCanceled && props.addingNewRowCanceled();
-              } else {
-                //reset the row to original row
-                setEditMode(false);
-                resetRow();
-              }
-            }}
-          />
-        </TableCell>
-      ) : allowEdit || allowDelete || allowAddNew ? (
-        <TableCell padding={"checkbox"}>
-          {allowEdit ? (
-            <EditButton
-              onExecute={() => {
-                setEditMode(true);
-              }}
-            />
-          ) : null}
-          {allowDelete ? (
-            <DeleteButton
-              onExecute={() => {
-                console.log("TODO:");
-              }}
-            />
-          ) : null}
-        </TableCell>
-      ) : null}
       {columns
         .filter((c: TableColumn) => !c.hidden)
         .map((c: TableColumn, colIndex: number) => {
           if (colIndex === 0) {
             return (
               <TableCell
-                key={`${c.accessor}${index}`}
+                key={`${c.accessor ? c.accessor : c.header}${index}`}
                 component="th"
                 id={labelId}
                 scope="row"
                 padding="default"
               >
                 {c.viewComponent ? (
-                  c.viewComponent(row)
+                  c.viewComponent(row, rowStateAndAction)
                 ) : (
                   <EditableTableCell
                     column={c}
@@ -210,16 +166,16 @@ export function LogiDataRow(props: {
                       changeValue(newValue, c.accessor)
                     }
                     dataRow={row}
-                    editMode={editMode || (props.addNewRecord && !newlyAdded)}
+                    editMode={editMode}
                   />
                 )}
               </TableCell>
             );
           } else
             return (
-              <TableCell key={`${c.accessor}${index}`}>
+              <TableCell key={`${c.accessor ? c.accessor : c.header}${index}`}>
                 {c.viewComponent ? (
-                  c.viewComponent(row)
+                  c.viewComponent(row, rowStateAndAction)
                 ) : (
                   <EditableTableCell
                     column={c}
@@ -227,7 +183,7 @@ export function LogiDataRow(props: {
                       changeValue(newValue, c.accessor)
                     }
                     dataRow={row}
-                    editMode={editMode || (props.addNewRecord && !newlyAdded)}
+                    editMode={editMode}
                   />
                 )}
               </TableCell>
@@ -236,37 +192,3 @@ export function LogiDataRow(props: {
     </TableRow>
   );
 }
-
-const EditButton = (props: any) => (
-  <IconButton onClick={props.onExecute} title="Edit row">
-    <EditIcon />
-  </IconButton>
-);
-
-const DeleteButton = (props: any) => (
-  <IconButton onClick={props.onExecute} title="Delete row">
-    <DeleteIcon />
-  </IconButton>
-);
-
-const CommitButton = (props: any) => (
-  <IconButton onClick={props.onExecute} title="Save changes">
-    <SaveIcon />
-  </IconButton>
-);
-
-const CancelButton = (props: any) => (
-  <IconButton
-    color="secondary"
-    onClick={props.onExecute}
-    title="Cancel changes"
-  >
-    <CancelIcon />
-  </IconButton>
-);
-
-const FailedButton = (props: any) => (
-  <Button color="primary" onClick={props.onExecute} title="Action Failed">
-    Failed!
-  </Button>
-);

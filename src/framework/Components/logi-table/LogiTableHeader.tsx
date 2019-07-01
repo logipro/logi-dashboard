@@ -64,7 +64,7 @@ export function LogiTableHeader(props: {
             <TableCell
               key={col.accessor}
               //align={col.dataType === 'Number' ? 'right' : 'left'}
-              padding={col.disablePadding ? "none" : "default"}
+              //padding={col.disablePadding ? "none" : "default"}
               sortDirection={orderBy === col.header ? order : false}
             >
               {props.allowSort && !(col.dataType === "ActionColumn") ? (

@@ -7,10 +7,12 @@ import TablePagination from "@material-ui/core/TablePagination";
 import TableRow from "@material-ui/core/TableRow";
 import Paper from "@material-ui/core/Paper";
 import { LogiTableHeader } from "./LogiTableHeader";
-import { LogiDataRow } from "./LogiDataRow";
+import { LogiDataRow, rowActionsAndStates } from "./LogiDataRow";
 import { MuiPickersUtilsProvider } from "@material-ui/pickers";
 import MomentUtils from "@date-io/moment";
 import { CircularProgress } from "@material-ui/core";
+
+export * from "./LogiDataRow";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -47,12 +49,21 @@ export type DataType =
 
 export interface TableColumn {
   header: string;
-  disablePadding?: boolean;
+  /**
+   * Used to access the data filed i.e. dataRow[accessor]
+   * Please note if this value is available then it will be used to create the key for table cells
+   * specially in case of action columns set this to a dummy value
+   * @type {string}
+   * @memberof TableColumn
+   */
   accessor: string;
   dataType: DataType;
   readOnly?: boolean;
   hidden?: boolean;
-  viewComponent?: (rowData: any) => React.ReactElement;
+  viewComponent?: (
+    rowData: any,
+    rowActionsAndStates: rowActionsAndStates
+  ) => React.ReactElement;
 }
 
 export interface LogiTableProps {
@@ -74,6 +85,12 @@ export interface LogiTableProps {
     checked: boolean
   ) => void;
   dense?: boolean;
+  /**
+   * increase the counter from zero to refresh
+   * The value must change if you want the remote data to be re fetched
+   * @memberof LogiTableProps
+   */
+  refreshData?: number;
 }
 
 export function LogiTable(props: LogiTableProps) {
@@ -107,13 +124,10 @@ export function LogiTable(props: LogiTableProps) {
       setData(props.data);
       setIsLoading(false);
     }
-  }, [props.data]);
+  }, [props.data, props.refreshData]);
 
   function handleChangePage(_event: unknown, newPage: number) {
     setPage(newPage);
-    console.log(
-      data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-    );
   }
 
   function handleChangeRowsPerPage(event: React.ChangeEvent<HTMLInputElement>) {
