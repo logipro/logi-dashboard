@@ -8,14 +8,25 @@ import {
   LogiStandardToolbar
 } from "../Components/logi-table"; //"logi-table";
 import { StandardActions } from "../Components/logi-table/StandardActions";
+import { Checkbox } from "@material-ui/core";
 
 interface IRolesProps {}
 
 const Roles: React.FunctionComponent<IRolesProps> = function(props) {
-  const Auth: any = useAuth();
+  console.log("in");
+  const [state, setstate] = useState(0);
+  useEffect(() => {
+    setstate(state + 1);
+  }, []);
+  return <div>{state}</div>;
+};
+
+const Roles1: React.FunctionComponent<IRolesProps> = function(props) {
   const [roles, setRoles] = useState();
   const [isLoadingRoles, setIsLoadingRoles] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [selectedRoleID, setSelectedRoleID] = useState();
+  const Auth: any = useAuth();
   useEffect(() => {
     async function fetchRoles() {
       setIsLoadingRoles(true);
@@ -26,7 +37,7 @@ const Roles: React.FunctionComponent<IRolesProps> = function(props) {
       setIsLoadingRoles(false);
     }
     fetchRoles();
-  }, [refreshTrigger]);
+  }, [Auth]);
 
   async function insertRole(newData: any) {
     try {
@@ -50,7 +61,7 @@ const Roles: React.FunctionComponent<IRolesProps> = function(props) {
   async function deleteRole(RoleID: any) {
     var url = `${process.env.REACT_APP_APIURL}security/roles`;
     await Auth.AuthenticatedServerCall(url, "DELETE", { RoleID: RoleID });
-    setRefreshTrigger(refreshTrigger + 1);
+    setRefreshTrigger(refreshTrigger ? refreshTrigger : 0 + 1);
   }
 
   const columns: TableColumn[] = [
@@ -60,15 +71,25 @@ const Roles: React.FunctionComponent<IRolesProps> = function(props) {
       dataType: "ActionColumn",
       viewComponent: (row: any, rowAsAndSs: rowActionsAndStates) => {
         return (
-          <StandardActions
-            {...rowAsAndSs}
-            deleteRecord={(): void => {
-              if (
-                window.confirm(`Are you sure you want to delete ${row.Role} ?`)
-              )
-                deleteRole(row.RoleID);
-            }}
-          />
+          <>
+            <Checkbox
+              checked={selectedRoleID === row.RoleID}
+              onClick={() => {
+                setSelectedRoleID(row.RoleID);
+              }}
+            />
+            <StandardActions
+              {...rowAsAndSs}
+              deleteRecord={(): void => {
+                if (
+                  window.confirm(
+                    `Are you sure you want to delete ${row.Role} ?`
+                  )
+                )
+                  deleteRole(row.RoleID);
+              }}
+            />
+          </>
         );
       }
     },
@@ -113,7 +134,7 @@ const Roles: React.FunctionComponent<IRolesProps> = function(props) {
                 try {
                   const newData: any = actionsAndStates.insertedRecordData();
                   await insertRole(newData);
-                  setRefreshTrigger(refreshTrigger + 1);
+                  setRefreshTrigger(refreshTrigger ? refreshTrigger : 0 + 1);
                   actionsAndStates.discardInsertMode();
                 } catch (exception) {
                   console.log(exception);
