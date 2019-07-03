@@ -1,13 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../Contexts/AuthContext";
-import { LogiTable, TableColumn } from "../Components/logi-table"; //"logi-table";
+import {
+  LogiTable,
+  TableColumn,
+  rowActionsAndStates,
+  toolbarActionsAndState,
+  LogiStandardToolbar
+} from "../Components/logi-table"; //"logi-table";
+import { StandardActions } from "../Components/logi-table/StandardActions";
 
 interface IRolesProps {}
 
-const Roles: React.FunctionComponent<IRolesProps> = props => {
+const Roles: React.FunctionComponent<IRolesProps> = function(props) {
   const Auth: any = useAuth();
   const [roles, setRoles] = useState();
   const [isLoadingRoles, setIsLoadingRoles] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   useEffect(() => {
     async function fetchRoles() {
       setIsLoadingRoles(true);
@@ -18,7 +26,7 @@ const Roles: React.FunctionComponent<IRolesProps> = props => {
       setIsLoadingRoles(false);
     }
     fetchRoles();
-  }, []);
+  }, [refreshTrigger]);
 
   async function insertRole(newData: any) {
     try {
@@ -26,11 +34,11 @@ const Roles: React.FunctionComponent<IRolesProps> = props => {
         return Promise.reject("Please fill all required fields");
       }
       var url = `${process.env.REACT_APP_APIURL}security/roles`;
+
       await Auth.AuthenticatedServerCall(url, "POST", {
-        Insert: JSON.stringify({
-          Role: (newData.Role as string).trim(),
-          Description: (newData.Description as string).trim
-        })
+        Insert: ` (Role,Description,createdBy,CreatedAt)  SELECT '${newData.Role.trim()}' ,
+        '${newData.Description.trim()}'
+      , ${Auth.LoggedInUserID}, datetime("now")`
       });
       return true;
     } catch (err) {
@@ -42,11 +50,28 @@ const Roles: React.FunctionComponent<IRolesProps> = props => {
   async function deleteRole(RoleID: any) {
     var url = `${process.env.REACT_APP_APIURL}security/roles`;
     await Auth.AuthenticatedServerCall(url, "DELETE", { RoleID: RoleID });
-    //.then(response => this.fetchData())
-    //.catch(error => this.fetchData());
+    setRefreshTrigger(refreshTrigger + 1);
   }
 
   const columns: TableColumn[] = [
+    {
+      header: "Actions",
+      accessor: "ActionColumnOne",
+      dataType: "ActionColumn",
+      viewComponent: (row: any, rowAsAndSs: rowActionsAndStates) => {
+        return (
+          <StandardActions
+            {...rowAsAndSs}
+            deleteRecord={(): void => {
+              if (
+                window.confirm(`Are you sure you want to delete ${row.Role} ?`)
+              )
+                deleteRole(row.RoleID);
+            }}
+          />
+        );
+      }
+    },
     {
       header: "RoleID",
       accessor: "RoleID",
@@ -78,9 +103,25 @@ const Roles: React.FunctionComponent<IRolesProps> = props => {
         columns={columns}
         keyAccessor="RoleID"
         data={roles}
-        allowSelection={true}
-        addNewRecord={async (newRow: any) => {
-          return insertRole(newRow);
+        //allowSelection={true}
+        tableToolbar={(actionsAndStates: toolbarActionsAndState) => {
+          return (
+            <LogiStandardToolbar
+              actionsAndStates={actionsAndStates}
+              title={"Roles"}
+              insertNewRecord={async recordData => {
+                try {
+                  const newData: any = actionsAndStates.insertedRecordData();
+                  await insertRole(newData);
+                  setRefreshTrigger(refreshTrigger + 1);
+                  actionsAndStates.discardInsertMode();
+                } catch (exception) {
+                  console.log(exception);
+                  alert("something went wrong, trying to save the data");
+                }
+              }}
+            />
+          );
         }}
       />
     </>

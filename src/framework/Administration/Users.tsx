@@ -17,7 +17,8 @@ import useMediaQuery from "@material-ui/core/useMediaQuery";
 import {
   TableColumn,
   LogiTable,
-  rowActionsAndStates
+  rowActionsAndStates,
+  toolbarActionsAndState
 } from "../Components/logi-table"; //"logi-table";
 import Fingerprint from "@material-ui/icons/Fingerprint";
 import GroupWork from "@material-ui/icons/GroupWork";
@@ -25,7 +26,8 @@ import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import RemoveCircle from "@material-ui/icons/RemoveCircle";
 import AddCircle from "@material-ui/icons/AddCircle";
 import CircularProgress from "@material-ui/core/CircularProgress";
-import { EditComp } from "../Components/logi-table/StandardActions";
+import { StandardActions } from "../Components/logi-table/StandardActions";
+import { LogiStandardToolbar } from "../Components/logi-table/LogiTableToolbar";
 
 interface IUsersProps {}
 
@@ -57,21 +59,16 @@ const Users: React.FunctionComponent<IUsersProps> = props => {
       header: "Actions",
       accessor: "ActionColumnOne",
       dataType: "ActionColumn",
-      viewComponent: (row: any, rowActionsAndStates: rowActionsAndStates) => {
+      viewComponent: (row: any, rowAsAndSs: rowActionsAndStates) => {
         return (
-          <EditComp
-            {...rowActionsAndStates}
+          <StandardActions
+            {...rowAsAndSs}
             saveChanges={(): Promise<boolean> => {
               //go through the new Data and create the update statement
               let updateStatement: String = "";
-              for (let key in rowActionsAndStates.newData) {
-                if (
-                  rowActionsAndStates.newData[key] !==
-                  rowActionsAndStates.oldData[key]
-                ) {
-                  updateStatement += `${key} = "${
-                    rowActionsAndStates.newData[key]
-                  }" ,`;
+              for (let key in rowAsAndSs.newData) {
+                if (rowAsAndSs.newData[key] !== rowAsAndSs.oldData[key]) {
+                  updateStatement += `${key} = "${rowAsAndSs.newData[key]}" ,`;
                 }
               }
               if (updateStatement.length > 0) {
@@ -84,7 +81,7 @@ const Users: React.FunctionComponent<IUsersProps> = props => {
                   `${process.env.REACT_APP_APIURL}security/users`,
                   "PUT",
                   {
-                    UserID: rowActionsAndStates.oldData.UserID,
+                    UserID: rowAsAndSs.oldData.UserID,
                     Update: updateStatement
                   }
                 )
@@ -96,7 +93,7 @@ const Users: React.FunctionComponent<IUsersProps> = props => {
                   })
                   .catch((error: any) => {
                     console.log(error);
-                    rowActionsAndStates.discardEditMode();
+                    rowAsAndSs.discardEditMode();
                   });
               }
               return Promise.resolve(true);
@@ -166,6 +163,39 @@ const Users: React.FunctionComponent<IUsersProps> = props => {
   return (
     <>
       <LogiTable
+        tableToolbar={(actionsAndStates: toolbarActionsAndState) => {
+          return (
+            <LogiStandardToolbar
+              actionsAndStates={actionsAndStates}
+              title={"Users"}
+              insertNewRecord={async recordData => {
+                try {
+                  const newData: any = actionsAndStates.insertedRecordData();
+                  if (!newData.UserName || !newData.EMail) {
+                    alert("Please fill all required fields");
+                    return;
+                  }
+                  await Auth.AuthenticatedServerCall(
+                    `${process.env.REACT_APP_APIURL}security/users`,
+                    "POST",
+                    {
+                      Insert: `(Username,Email,createdBy,CreatedAt,IsDisabled)  SELECT '${newData.UserName.trim()}' ,  '${newData.EMail.trim()}'
+                        , ${Auth.LoggedInUserID}, datetime("now"),${
+                        newData.IsDisabled ? newData.IsDisabled : 0
+                      } `
+                    }
+                  );
+                  //refresh the data inside the grid
+                  setRefreshData(refreshData + 1);
+                  actionsAndStates.discardInsertMode();
+                } catch (exception) {
+                  console.log(exception);
+                  alert("something went wrong, trying to save the data");
+                }
+              }}
+            />
+          );
+        }}
         refreshData={refreshData}
         dense={true}
         allowSort={true}
@@ -173,60 +203,6 @@ const Users: React.FunctionComponent<IUsersProps> = props => {
         keyAccessor="UserID"
         data={memorizedFetchUser}
         allowSelection={false}
-        // addNewRecord={(newData: any) => {
-        //   if (!newData.UserName || !newData.EMail) {
-        //     return Promise.reject("Please fill all required fields");
-        //   }
-        //   return Auth.AuthenticatedServerCall(
-        //     `${process.env.REACT_APP_APIURL}security/users`,
-        //     "POST",
-        //     {
-        //       Insert: `(Username,Email,createdBy,CreatedAt,IsDisabled)  SELECT '${newData.UserName.trim()}' ,  '${newData.EMail.trim()}'
-        //         , ${Auth.LoggedInUserID}, datetime("now"),${
-        //         newData.IsDisabled ? newData.IsDisabled : 0
-        //       } `
-        //     }
-        //   )
-        //     .then((r: any) => {
-        //       return true;
-        //     })
-        //     .catch((error: any) => {
-        //       console.log(error);
-        //       return false;
-        //     });
-        // }}
-        // editRecord={(oldData: any, newData: any): Promise<boolean> => {
-        //   //go through the new Data and create the update statement
-        //   let updateStatement: String = "";
-        //   for (let key in newData) {
-        //     if (newData[key] !== oldData[key]) {
-        //       updateStatement += `${key} = "${newData[key]}" ,`;
-        //     }
-        //   }
-        //   if (updateStatement.length > 0) {
-        //     //remove the last comma
-        //     updateStatement = updateStatement.substring(
-        //       0,
-        //       updateStatement.length - 1
-        //     );
-        //     return Auth.AuthenticatedServerCall(
-        //       `${process.env.REACT_APP_APIURL}security/users`,
-        //       "PUT",
-        //       {
-        //         UserID: oldData.UserID,
-        //         Update: updateStatement
-        //       }
-        //     )
-        //       .then((r: any) => {
-        //         return true;
-        //       })
-        //       .catch((error: any) => {
-        //         console.log(error);
-        //         return false;
-        //       });
-        //   }
-        //   return Promise.resolve(true);
-        // }}
       />
       <Dialog
         fullScreen={fullScreen}
@@ -359,11 +335,13 @@ const UserRoleDialog = function(props: {
       });
   };
 
+  const memorizedGetUserRoles = useCallback(getUsersRoles, []);
+
   useEffect(() => {
     if (props.selectedUserID >= 0) {
-      getUsersRoles();
+      memorizedGetUserRoles();
     }
-  }, [props.selectedUserID]);
+  }, [props.selectedUserID, memorizedGetUserRoles]);
 
   function modifyUsersRole(userID: number, roleID: number, isAdd: boolean) {
     setIsLoadingRoles(true);
@@ -400,7 +378,9 @@ const UserRoleDialog = function(props: {
       </DialogTitle>
       <DialogContent>
         <Paper className={classes.root}>
-          {isLoadingRoles ? (
+          {loadingRolesError ? (
+            <div>Error Loading Roles</div>
+          ) : isLoadingRoles ? (
             <CircularProgress size={30} />
           ) : userRoles !== undefined ? (
             userRoles.map((data: any) => {
