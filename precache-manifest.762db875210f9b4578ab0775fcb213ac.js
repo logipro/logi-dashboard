@@ -1,6 +1,6 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "52d2c685909d635edbe003f72e90faaa",
+    "revision": "fdbd855cc6f49bff0f0da5a01fcaf663",
     "url": "/logi-dashboard/index.html"
   },
   {
@@ -32,12 +32,12 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/logi-dashboard/static/js/2.4941564c.chunk.js"
   },
   {
-    "revision": "82b3aa2e3dbe5c20a922",
-    "url": "/logi-dashboard/static/js/3.7376513c.chunk.js"
+    "revision": "4f13d0d04c1a6bb88cd8",
+    "url": "/logi-dashboard/static/js/3.43d948cd.chunk.js"
   },
   {
-    "revision": "37ccd240ddc12d7229ee",
-    "url": "/logi-dashboard/static/js/4.e6853fec.chunk.js"
+    "revision": "0c2aaae6a61ed6ec4292",
+    "url": "/logi-dashboard/static/js/4.825fe09b.chunk.js"
   },
   {
     "revision": "87db474571923903444d",
@@ -60,12 +60,12 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/logi-dashboard/static/js/9.08ecfed1.chunk.js"
   },
   {
-    "revision": "19febad2e783b2e55e57",
-    "url": "/logi-dashboard/static/js/main.a6ba823f.chunk.js"
+    "revision": "1fd0c23596739f0ef278",
+    "url": "/logi-dashboard/static/js/main.b78a4285.chunk.js"
   },
   {
-    "revision": "a9da07ac8b590dbce09b",
-    "url": "/logi-dashboard/static/js/runtime~main.043bac29.js"
+    "revision": "ba6d7429fe7ff288fe4a",
+    "url": "/logi-dashboard/static/js/runtime~main.407209a7.js"
   },
   {
     "revision": "987b84570ea69ee660455b8d5e91f5f1",
