@@ -1,18 +1,50 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
 import SaveIcon from "@material-ui/icons/Save";
 import CancelIcon from "@material-ui/icons/Cancel";
 import IconButton from "@material-ui/core/IconButton";
-import CircularProgress from "@material-ui/core/CircularProgress";
 import Button from "@material-ui/core/Button";
 import { rowActionsAndStates } from "./index";
+import {
+  makeStyles,
+  Theme,
+  createStyles,
+  CircularProgress
+} from "@material-ui/core";
 
-interface editActionsAndStates extends rowActionsAndStates {
-  saveChanges: () => any;
+export interface IStandardActionsAndStates extends rowActionsAndStates {
+  actionInProgress?: boolean;
+  saveChanges?: () => any;
+  deleteRecord?: () => any;
 }
 
-export function EditComp(props: editActionsAndStates) {
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    progress: {
+      marginLeft: theme.spacing(2),
+      marginRight: theme.spacing(2)
+    }
+  })
+);
+
+export function StandardActions(props: IStandardActionsAndStates) {
+  const classes = useStyles();
+  if (props.actionInProgress) {
+    return <CircularProgress size={30} className={classes.progress} />;
+  }
+  if (props.editMode) {
+    return <EditComp {...props} />;
+  }
+  return (
+    <>
+      {props.saveChanges !== undefined ? <EditComp {...props} /> : null}
+      {props.deleteRecord !== undefined ? <DeleteComp {...props} /> : null}
+    </>
+  );
+}
+
+export function EditComp(props: IStandardActionsAndStates) {
   if (!props.editMode) {
     return (
       <EditButton
@@ -26,7 +58,7 @@ export function EditComp(props: editActionsAndStates) {
       <>
         <CommitButton
           onClick={(e: any) => {
-            props.saveChanges();
+            props.saveChanges && props.saveChanges();
           }}
         />
         <CancelButton
@@ -38,6 +70,11 @@ export function EditComp(props: editActionsAndStates) {
     );
   }
 }
+export function DeleteComp(props: IStandardActionsAndStates) {
+  return (
+    <DeleteButton onClick={() => props.deleteRecord && props.deleteRecord()} />
+  );
+}
 
 const EditButton = (props: any) => (
   <IconButton onClick={props.onClick} title="Edit row">
@@ -45,25 +82,25 @@ const EditButton = (props: any) => (
   </IconButton>
 );
 
-export const DeleteButton = (props: any) => (
+const DeleteButton = (props: any) => (
   <IconButton onClick={props.onClick} title="Delete row">
     <DeleteIcon />
   </IconButton>
 );
 
-export const CommitButton = (props: any) => (
+const CommitButton = (props: any) => (
   <IconButton onClick={props.onClick} title="Save changes">
     <SaveIcon />
   </IconButton>
 );
 
-export const CancelButton = (props: any) => (
+const CancelButton = (props: any) => (
   <IconButton color="secondary" onClick={props.onClick} title="Cancel changes">
     <CancelIcon />
   </IconButton>
 );
 
-export const FailedButton = (props: any) => (
+const FailedButton = (props: any) => (
   <Button color="primary" onClick={props.onClick} title="Action Failed">
     Failed!
   </Button>

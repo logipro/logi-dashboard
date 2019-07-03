@@ -51,6 +51,12 @@ export interface rowActionsAndStates {
    * @memberof rowActionsAndStates
    */
   setData: (data: any) => void;
+  /**
+   * True when the record is a newly added record (not added yet!)
+   * @type {boolean}
+   * @memberof rowActionsAndStates
+   */
+  insertMode: boolean;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -59,10 +65,6 @@ const useStyles = makeStyles((theme: Theme) =>
       "&:nth-of-type(odd)": {
         backgroundColor: theme.palette.background.default
       }
-    },
-    progress: {
-      marginLeft: theme.spacing(2),
-      marginRight: theme.spacing(2)
     }
   })
 );
@@ -71,11 +73,12 @@ export function LogiDataRow(props: {
   columns: Array<TableColumn>;
   index: number;
   allowSelection?: boolean;
-  row?: any;
-  addNewRecord?: (newRow: any) => Promise<boolean>;
-  editRecord?: (oldRow: any, newRow: any) => Promise<boolean>;
-  deleteRecord?: (oldRow: any) => Promise<boolean>;
-  addingNewRowCanceled?: () => void;
+  row: any;
+  insertMode?: boolean;
+  /**
+   * will be called everytime the record data is modified
+   */
+  setEditedRow?: (row: any) => void;
 }) {
   const classes = useStyles();
   const { columns, index } = props;
@@ -91,9 +94,11 @@ export function LogiDataRow(props: {
     var editedRow = { ...row };
     editedRow[columnName] = value;
     setRow(editedRow);
+    props.setEditedRow && props.setEditedRow(editedRow);
   }
   function resetRow() {
     setRow(props.row);
+    props.setEditedRow && props.setEditedRow(props.row);
   }
 
   let rowStateAndAction: rowActionsAndStates = {
@@ -104,36 +109,14 @@ export function LogiDataRow(props: {
       setEditMode(false);
       resetRow();
     },
-    editMode: editMode,
+    editMode: editMode || (props.insertMode ? props.insertMode : false),
     oldData: props.row,
     newData: row, // this will be modified data (in case user changes values)
     setData: (newData: any) => {
-      console.log(newData);
       setRow(newData);
-    }
+    },
+    insertMode: props.insertMode ? props.insertMode : false
   };
-
-  /*const [selected, setSelected] = useState<string[]>([]);
-
-  const isSelected = (name: string) => selected.indexOf(name) !== -1;
-  function handleClick(name: string) {
-    const selectedIndex = selected.indexOf(name);
-    let newSelected: string[] = [];
-
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, name);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1)
-      );
-    }
-    setSelected(newSelected);
-  }*/
 
   return (
     <TableRow className={classes.rowStyle}>
@@ -157,7 +140,8 @@ export function LogiDataRow(props: {
                 scope="row"
                 padding="default"
               >
-                {c.viewComponent ? (
+                {props.insertMode &&
+                c.dataType === "ActionColumn" ? null : c.viewComponent ? (
                   c.viewComponent(row, rowStateAndAction)
                 ) : (
                   <EditableTableCell
@@ -166,7 +150,7 @@ export function LogiDataRow(props: {
                       changeValue(newValue, c.accessor)
                     }
                     dataRow={row}
-                    editMode={editMode}
+                    editMode={editMode || props.insertMode}
                   />
                 )}
               </TableCell>
@@ -174,7 +158,8 @@ export function LogiDataRow(props: {
           } else
             return (
               <TableCell key={`${c.accessor ? c.accessor : c.header}${index}`}>
-                {c.viewComponent ? (
+                {props.insertMode &&
+                c.dataType === "ActionColumn" ? null : c.viewComponent ? (
                   c.viewComponent(row, rowStateAndAction)
                 ) : (
                   <EditableTableCell
@@ -183,7 +168,9 @@ export function LogiDataRow(props: {
                       changeValue(newValue, c.accessor)
                     }
                     dataRow={row}
-                    editMode={editMode}
+                    editMode={
+                      editMode || (props.insertMode ? props.insertMode : false)
+                    }
                   />
                 )}
               </TableCell>

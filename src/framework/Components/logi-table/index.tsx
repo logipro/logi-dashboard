@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useReducer } from "react";
+import React, { useState, useEffect } from "react";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
@@ -13,6 +13,7 @@ import MomentUtils from "@date-io/moment";
 import { CircularProgress } from "@material-ui/core";
 
 export * from "./LogiDataRow";
+export * from "./LogiTableToolbar";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -66,6 +67,33 @@ export interface TableColumn {
   ) => React.ReactElement;
 }
 
+export interface toolbarActionsAndState {
+  /**
+   *Call this function to put the row in edit mode status
+   * @memberof toolbarActionsAndState
+   */
+  enterInsertMode: () => void;
+
+  /**
+   *Call this function to cancel the insert mode and return the row to reset status
+   * @memberof toolbarActionsAndState
+   */
+  discardInsertMode: () => void;
+
+  /**
+   *true if the table is in insert mode
+   * @type {boolean}
+   * @memberof toolbarActionsAndState
+   */
+  insertMode: boolean;
+  /**
+   * newly insert record data
+   * @type {*}
+   * @memberof toolbarActionsAndState
+   */
+  insertedRecordData: () => any;
+}
+
 export interface LogiTableProps {
   keyAccessor: string;
   columns: Array<TableColumn>;
@@ -73,9 +101,6 @@ export interface LogiTableProps {
   allowSelection?: boolean;
   showSelectAll?: boolean;
   allowSort?: boolean;
-  addNewRecord?: (newRow: any) => Promise<boolean>;
-  editRecord?: (oldRow: any, newRow: any) => Promise<boolean>;
-  deleteRecord?: (oldRow: any) => Promise<boolean>;
   customSortFunction?: (
     event: React.MouseEvent<unknown>,
     property: TableColumn
@@ -91,6 +116,14 @@ export interface LogiTableProps {
    * @memberof LogiTableProps
    */
   refreshData?: number;
+  /**
+   * this component will be shown on top of the table
+   * you can import and use the LogiTableToolbar as standard if you want or create your own
+   * @memberof LogiTableProps
+   */
+  tableToolbar?: (
+    rowActionsAndStates: toolbarActionsAndState
+  ) => React.ReactElement;
 }
 
 export function LogiTable(props: LogiTableProps) {
@@ -101,6 +134,7 @@ export function LogiTable(props: LogiTableProps) {
   const [data, setData] = useState([{}]);
   const [isError, setIsError] = useState(false);
   const [addingNewRecord, setAddingNewRecord] = useState(false);
+  let newlyAddedRow: any = undefined;
 
   useEffect(() => {
     console.log("setting data");
@@ -143,38 +177,46 @@ export function LogiTable(props: LogiTableProps) {
       <div className={classes.root}>
         <Paper className={classes.paper}>
           <div className={classes.tableWrapper}>
+            {props.tableToolbar
+              ? props.tableToolbar({
+                  enterInsertMode: () => {
+                    setAddingNewRecord(true);
+                  },
+                  discardInsertMode: () => {
+                    setAddingNewRecord(false);
+                  },
+                  insertMode: addingNewRecord,
+                  insertedRecordData: () => {
+                    return newlyAddedRow;
+                  }
+                })
+              : null}
             <Table
               className={classes.table}
               aria-labelledby="tableTitle"
               size={props.dense ? "small" : "medium"}
             >
-              <LogiTableHeader
-                {...props}
-                addingNewRecord={() => {
-                  setAddingNewRecord(true);
-                }}
-                allowEdit={props.editRecord ? true : false}
-                allowAddNew={props.addNewRecord ? true : false}
-                allowDelete={props.deleteRecord ? true : false}
-              />
+              <LogiTableHeader {...props} />
               <TableBody>
                 {addingNewRecord && (
                   <LogiDataRow
                     key={-1}
                     row={() => {
                       let newRecord: any = {};
-                      props.columns.forEach((col: TableColumn) => {
-                        newRecord[col.accessor] = "";
-                      });
+                      props.columns
+                        .filter(c => c.dataType !== "ActionColumn")
+                        .forEach((col: TableColumn) => {
+                          newRecord[col.accessor] = "";
+                        });
                       return newRecord;
                     }}
                     index={-1}
                     columns={props.columns}
                     allowSelection={false}
-                    addingNewRowCanceled={() => {
-                      setAddingNewRecord(false);
+                    insertMode={true}
+                    setEditedRow={(row: any) => {
+                      newlyAddedRow = row;
                     }}
-                    addNewRecord={props.addNewRecord}
                   />
                 )}
                 {isLoading || isError ? (
@@ -212,9 +254,6 @@ export function LogiTable(props: LogiTableProps) {
                           index={index}
                           columns={props.columns}
                           allowSelection={props.allowSelection}
-                          editRecord={props.editRecord}
-                          deleteRecord={props.deleteRecord}
-                          addNewRecord={props.addNewRecord}
                         />
                       );
                     })

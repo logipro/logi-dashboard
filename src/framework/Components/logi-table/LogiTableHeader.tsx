@@ -5,8 +5,6 @@ import TableRow from "@material-ui/core/TableRow";
 import TableSortLabel from "@material-ui/core/TableSortLabel";
 import Checkbox from "@material-ui/core/Checkbox";
 import { Order, TableColumn } from "./index";
-import AddIcon from "@material-ui/icons/Add";
-import { IconButton } from "@material-ui/core";
 
 export function LogiTableHeader(props: {
   onSelectAllClick?: any;
@@ -14,11 +12,7 @@ export function LogiTableHeader(props: {
   customSortFunction?: any;
   allowSelection?: boolean;
   showSelectAll?: boolean;
-  allowEdit?: boolean;
-  allowDelete?: boolean;
-  allowAddNew?: boolean;
   allowSort?: boolean;
-  addingNewRecord: () => void;
 }) {
   const { onSelectAllClick, columns } = props;
 
@@ -52,13 +46,6 @@ export function LogiTableHeader(props: {
             ) : null}
           </TableCell>
         ) : null}
-        {props.allowEdit || props.allowDelete || props.allowAddNew ? (
-          <TableCell>
-            {props.allowAddNew ? (
-              <AddButton onExecute={() => props.addingNewRecord()} />
-            ) : null}
-          </TableCell>
-        ) : null}
         {columns.map(col =>
           col.hidden ? null : (
             <TableCell
@@ -85,9 +72,3 @@ export function LogiTableHeader(props: {
     </TableHead>
   );
 }
-
-const AddButton = (props: any) => (
-  <IconButton color="secondary" onClick={props.onExecute} title="Add Record">
-    <AddIcon />
-  </IconButton>
-);
