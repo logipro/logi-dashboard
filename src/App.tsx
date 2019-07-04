@@ -131,11 +131,22 @@ function RouteNotFound(props: any) {
   );
 }
 
-function DynamicLoader(props: any) {
+/*function DynamicLoader(props: any) {
+  console.log("requesting" + props.component);
+  const LazyComponent = React.lazy(() => import(`${props.component}`));
+  const LazyComponentMemo = React.useMemo(() => LazyComponent, []);
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LazyComponentMemo />
+    </Suspense>
+  );
+}*/
+
+const DynamicLoader = React.memo(function(props: any) {
   const LazyComponent = React.lazy(() => import(`${props.component}`));
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <LazyComponent />
     </Suspense>
   );
-}
+});
