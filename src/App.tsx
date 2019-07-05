@@ -131,22 +131,26 @@ function RouteNotFound(props: any) {
   );
 }
 
-/*function DynamicLoader(props: any) {
-  console.log("requesting" + props.component);
-  const LazyComponent = React.lazy(() => import(`${props.component}`));
-  const LazyComponentMemo = React.useMemo(() => LazyComponent, []);
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <LazyComponentMemo />
-    </Suspense>
-  );
-}*/
+//this map will keep all the already loaded components
+//TODO: empty this after user logs out or maybe move to Auth
+const componentsMap = new Map();
 
-const DynamicLoader = React.memo(function(props: any) {
-  const LazyComponent = React.lazy(() => import(`${props.component}`));
+const getCachedLazy = (component: any) => {
+  if (componentsMap.has(component)) return componentsMap.get(component);
+
+  const Component = React.lazy(() => import(`${component}`));
+
+  componentsMap.set(component, Component);
+
+  return Component;
+};
+
+const DynamicLoader = (props: any) => {
+  const LazyComponent = getCachedLazy(props.component);
+
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <LazyComponent />
     </Suspense>
   );
-});
+};
