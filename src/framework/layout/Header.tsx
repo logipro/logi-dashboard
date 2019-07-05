@@ -13,6 +13,7 @@ import { useChangeTheme } from "../Contexts/ThemeContext";
 import { useTheme } from "@material-ui/styles";
 import AccountCircleIcon from "@material-ui/icons/AccountCircle";
 import { useAuth } from "../Contexts/AuthContext";
+import { withRouter } from "react-router-dom";
 
 const drawerWidth = 240;
 
@@ -79,7 +80,8 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-function Header(props: any) {
+//@ts-ignore
+const Header: React.FC<props> = withRouter((props: any) => {
   const classes = useStyles();
   const { sidebarOpen, setSidebarOpen } = props;
 
@@ -96,7 +98,6 @@ function Header(props: any) {
   }
 
   const Auth: any = useAuth();
-
   return (
     <AppBar
       position="fixed"
@@ -135,19 +136,35 @@ function Header(props: any) {
             )}
           </IconButton>
         </Tooltip>
-        <Tooltip title={"Login"} enterDelay={300}>
-          <IconButton
-            aria-haspopup="true"
-            color="inherit"
-            aria-label="Account Login"
-            onClick={() => Auth.showLogin()}
-          >
-            <AccountCircleIcon />
-          </IconButton>
-        </Tooltip>
+        {Auth.LoggedInUserID < 0 ? (
+          <Tooltip title={"Login"} enterDelay={300}>
+            <IconButton
+              aria-haspopup="true"
+              color="inherit"
+              aria-label="Account Login"
+              onClick={() => Auth.showLogin()}
+            >
+              <AccountCircleIcon />
+            </IconButton>
+          </Tooltip>
+        ) : (
+          <Tooltip title={"Logout"} enterDelay={300}>
+            <IconButton
+              aria-haspopup="true"
+              color="inherit"
+              aria-label="Account Login"
+              onClick={() => {
+                Auth.logout();
+                //props.history.push("/");
+              }}
+            >
+              <AccountCircleIcon />
+            </IconButton>
+          </Tooltip>
+        )}
       </Toolbar>
     </AppBar>
   );
-}
+});
 
 export default Header;

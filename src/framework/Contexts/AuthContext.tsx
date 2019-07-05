@@ -8,13 +8,14 @@ type AuthContextType = {
   AccessibleApps: Array<{}>;
   Token: String;
   AuthenticatedServerCall: Function;
+  logout: Function;
 };
 
 const AuthContext = React.createContext<Partial<AuthContextType>>({});
 
 export function AuthProvider(props: any) {
   const [LoginVisible, setLoginVisible] = React.useState(false);
-  const [LoggedInUserID, setLoggedInUserID] = React.useState<Number>();
+  const [LoggedInUserID, setLoggedInUserID] = React.useState<Number>(-1);
   const [Token, setToken] = React.useState();
   const [initialLoad, setInitialLoad] = useState(true);
   const [initialLoadFailed, setInitialLoadFailed] = useState(false);
@@ -27,20 +28,13 @@ export function AuthProvider(props: any) {
   function hideLogin() {
     setLoginVisible(false);
   }
-
-  async function getGuestToken() {
-    const headers = {
-      Accept: "application/json",
-      "Content-Type": "application/json"
-    };
-    const result = await fetch(`${process.env.REACT_APP_APIURL}guesttoken`, {
-      headers
-    });
-    if (!result.ok) throw new Error(result.statusText);
-    const res = await result.json();
-    setToken(res["token"]);
-    setLoggedInUserID(res["userID"]);
-    return res;
+  function logout() {
+    console.log("logging out");
+    setToken(undefined);
+    setAccessibleApps([]);
+    setLoggedInUserID(-1);
+    //change the value for the get token to kick in
+    setInitialLoad(true);
   }
 
   async function authenticateUser(username: String, password: String) {
@@ -71,6 +65,7 @@ export function AuthProvider(props: any) {
       hideLogin();
     } catch (exception) {
       setloginState("Failed");
+      setLoggedInUserID(-1);
       //reset the token so will get new guest token
       setToken("");
     }
@@ -79,10 +74,8 @@ export function AuthProvider(props: any) {
   const AuthenticatedServerCall = (
     url: string,
     method: string,
-    body: any = undefined,
-    successMessage: any = undefined
+    body: any = undefined
   ) => {
-    console.log(body);
     return new Promise((resolve, reject) =>
       fetch(url, {
         method: method,
@@ -95,15 +88,14 @@ export function AuthProvider(props: any) {
       }).then(response => {
         if (response.ok) {
           resolve(response.json());
-          if (successMessage) {
-            //toast.success(successMessage);
-          }
         } else {
           //console.dir(response);
           if (response.status === 401) {
             //unauthorized
             //show login dialog (in case user can/wants to login)
             //store.dispatch(toggleIsLoginDialogOpen(true));
+            //TODO:
+            reject("unauthorized/relogin");
           }
           reject(response.statusText);
           //toast.error("Error :" + response.statusText);
@@ -117,10 +109,22 @@ export function AuthProvider(props: any) {
   React.useEffect(() => {
     async function initialTokenFetch() {
       try {
-        console.log(initialLoad);
+        console.log("in guest token fetch");
         //get guest token then get accessible (public apps) and also set initial load to false
-        await getGuestToken();
-        //await getAccessibleApps();
+        const headers = {
+          Accept: "application/json",
+          "Content-Type": "application/json"
+        };
+        const result = await fetch(
+          `${process.env.REACT_APP_APIURL}guesttoken`,
+          {
+            headers
+          }
+        );
+        if (!result.ok) throw new Error(result.statusText);
+        const res = await result.json();
+        setToken(res["token"]);
+        setLoggedInUserID(-1);
         setInitialLoad(false);
       } catch (exception) {
         console.log(exception);
@@ -206,7 +210,8 @@ export function AuthProvider(props: any) {
         LoggedInUserID,
         AccessibleApps,
         Token,
-        AuthenticatedServerCall: AuthenticatedServerCall
+        AuthenticatedServerCall: AuthenticatedServerCall,
+        logout: logout
       }}
     >
       <LoginDialog
