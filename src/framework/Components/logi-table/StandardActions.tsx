@@ -12,11 +12,36 @@ import {
   createStyles,
   CircularProgress
 } from "@material-ui/core";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import ExpandLessIcon from "@material-ui/icons/ExpandLess";
 
 export interface IStandardActionsAndStates extends rowActionsAndStates {
+  /**
+   *True when a delete or Save is in progress
+   *
+   * @type {boolean}
+   * @memberof IStandardActionsAndStates
+   */
   actionInProgress?: boolean;
+  /**
+   * Will be fired when Save button is clicked,
+   * if exists Edit button will be displayed
+   * @memberof IStandardActionsAndStates
+   */
   saveChanges?: () => any;
+  /**
+   *Will be fired when delete button is clicked
+   * if exists Delete icon will be displayed
+   * @memberof IStandardActionsAndStates
+   */
   deleteRecord?: () => any;
+  /**
+   * The component that you expect to be displayed in details panel
+   *
+   * @type {React.ReactElement}
+   * @memberof IStandardActionsAndStates
+   */
+  expandComp?: React.ReactElement;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -38,6 +63,7 @@ export function StandardActions(props: IStandardActionsAndStates) {
   }
   return (
     <>
+      {props.expandComp !== undefined ? <ExpandDetail {...props} /> : null}
       {props.saveChanges !== undefined ? <EditComp {...props} /> : null}
       {props.deleteRecord !== undefined ? <DeleteComp {...props} /> : null}
     </>
@@ -76,6 +102,30 @@ export function DeleteComp(props: IStandardActionsAndStates) {
   );
 }
 
+export function ExpandDetail(props: IStandardActionsAndStates) {
+  if (props.isExpanded) {
+    return (
+      <IconButton
+        onClick={() => {
+          props.collapse && props.collapse();
+        }}
+      >
+        <ExpandLessIcon />
+      </IconButton>
+    );
+  } else {
+    return (
+      <IconButton
+        onClick={() => {
+          props.expandComp && props.expand(props.expandComp);
+        }}
+      >
+        <ExpandMoreIcon />
+      </IconButton>
+    );
+  }
+}
+
 const EditButton = (props: any) => (
   <IconButton onClick={props.onClick} title="Edit row">
     <EditIcon />
@@ -105,97 +155,3 @@ const FailedButton = (props: any) => (
     Failed!
   </Button>
 );
-
-/*export function StandardActions(props:any){
-      return ({newlyAdded ? (
-        <TableCell>New</TableCell>
-      ) : deleted ? (
-        <TableCell>DELETED</TableCell>
-      ) : actionInProgress ? (
-        <TableCell>
-          <CircularProgress size={30} className={classes.progress} />
-        </TableCell>
-      ) : actionSuccess && !actionSuccess ? (
-        <TableCell>
-          <FailedButton
-            onClick={() => {
-              //reset the row to original row
-              setEditMode(false);
-              setactionSuccess(undefined);
-              setActionInProgress(false);
-              setDeleted(false);
-              resetRow();
-            }}
-          />
-        </TableCell>
-      ) : editMode || props.addNewRecord ? (
-        <TableCell padding={"checkbox"}>
-          <CommitButton
-            onClick={() => {
-              if (props.addNewRecord) {
-                setActionInProgress(true);
-                props
-                  .addNewRecord(row)
-                  .then(result => {
-                    setactionSuccess(result);
-                    setActionInProgress(false);
-                    setEditMode(false);
-                    setNewlyAdded(true);
-                  })
-                  .catch(e => {
-                    console.log(e);
-                    setactionSuccess(false);
-                    setActionInProgress(false);
-                    setEditMode(false);
-                    resetRow();
-                  });
-              } else if (props.editRecord) {
-                setActionInProgress(true);
-                props
-                  .editRecord(props.row, row)
-                  .then(result => {
-                    setactionSuccess(result);
-                    setActionInProgress(false);
-                    setEditMode(false);
-                  })
-                  .catch(e => {
-                    console.log(e);
-                    setactionSuccess(false);
-                    setActionInProgress(false);
-                    setEditMode(false);
-                    resetRow();
-                  });
-              }
-            }}
-          />
-          <CancelButton
-            onClick={() => {
-              if (props.addNewRecord) {
-                props.addingNewRowCanceled && props.addingNewRowCanceled();
-              } else {
-                //reset the row to original row
-                setEditMode(false);
-                resetRow();
-              }
-            }}
-          />
-        </TableCell>
-      ) : allowEdit || allowDelete || allowAddNew ? (
-        <TableCell padding={"checkbox"}>
-          {allowEdit ? (
-            <EditButton
-              onClick={() => {
-                setEditMode(true);
-              }}
-            />
-          ) : null}
-          {allowDelete ? (
-            <DeleteButton
-              onClick={() => {
-                console.log("TODO:");
-              }}
-            />
-          ) : null}
-        </TableCell>
-      ) : null})
-  }*/

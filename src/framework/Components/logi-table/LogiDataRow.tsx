@@ -57,6 +57,25 @@ export interface rowActionsAndStates {
    * @memberof rowActionsAndStates
    */
   insertMode: boolean;
+
+  /**
+   *True when the details panel is open
+   * @type {boolean}
+   * @memberof IStandardActionsAndStates
+   */
+  isExpanded: boolean;
+
+  /**
+   * call to expand the row with sent details
+   * @memberof rowActionsAndStates
+   */
+  expand: (detailsComp: React.ReactElement) => void;
+  /**
+   *Close the details panel
+   *
+   * @memberof IStandardActionsAndStates
+   */
+  collapse: () => any;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -76,7 +95,7 @@ export function LogiDataRow(props: {
   row: any;
   insertMode?: boolean;
   /**
-   * will be called everytime the record data is modified
+   * will be called every time the record data is modified
    */
   setEditedRow?: (row: any) => void;
 }) {
@@ -84,7 +103,8 @@ export function LogiDataRow(props: {
   const { columns, index } = props;
   const labelId = `enhanced-table-checkbox-${index}`;
   const [editMode, setEditMode] = useState(false);
-
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [rowDetails, setRowDetails] = useState();
   const [row, setRow] = useState(props.row);
   useEffect(() => {
     setRow(props.row);
@@ -115,67 +135,89 @@ export function LogiDataRow(props: {
     setData: (newData: any) => {
       setRow(newData);
     },
-    insertMode: props.insertMode ? props.insertMode : false
+    insertMode: props.insertMode ? props.insertMode : false,
+    isExpanded: isExpanded,
+    expand: detailsComp => {
+      setRowDetails(detailsComp);
+      setIsExpanded(true);
+    },
+    collapse: () => {
+      setIsExpanded(false);
+    }
   };
 
   return (
-    <TableRow className={classes.rowStyle}>
-      {props.allowSelection ? (
-        <TableCell padding="checkbox">
-          <Checkbox
-            checked={false}
-            inputProps={{ "aria-labelledby": labelId }}
-          />
-        </TableCell>
+    <>
+      <TableRow className={classes.rowStyle}>
+        {props.allowSelection ? (
+          <TableCell padding="checkbox">
+            <Checkbox
+              checked={false}
+              inputProps={{ "aria-labelledby": labelId }}
+            />
+          </TableCell>
+        ) : null}
+        {columns
+          .filter((c: TableColumn) => !c.hidden)
+          .map((c: TableColumn, colIndex: number) => {
+            if (colIndex === 0) {
+              return (
+                <TableCell
+                  key={`${c.accessor ? c.accessor : c.header}${index}`}
+                  component="th"
+                  id={labelId}
+                  scope="row"
+                  padding="default"
+                >
+                  {props.insertMode &&
+                  c.dataType === "ActionColumn" ? null : c.viewComponent ? (
+                    c.viewComponent(row, rowStateAndAction)
+                  ) : (
+                    <EditableTableCell
+                      column={c}
+                      changeValue={(newValue: any) =>
+                        changeValue(newValue, c.accessor)
+                      }
+                      dataRow={row}
+                      editMode={editMode || props.insertMode}
+                    />
+                  )}
+                </TableCell>
+              );
+            } else
+              return (
+                <TableCell
+                  key={`${c.accessor ? c.accessor : c.header}${index}`}
+                >
+                  {props.insertMode &&
+                  c.dataType === "ActionColumn" ? null : c.viewComponent ? (
+                    c.viewComponent(row, rowStateAndAction)
+                  ) : (
+                    <EditableTableCell
+                      column={c}
+                      changeValue={(newValue: any) =>
+                        changeValue(newValue, c.accessor)
+                      }
+                      dataRow={row}
+                      editMode={
+                        editMode ||
+                        (props.insertMode ? props.insertMode : false)
+                      }
+                    />
+                  )}
+                </TableCell>
+              );
+          })}
+      </TableRow>
+      {isExpanded ? (
+        <TableRow>
+          <TableCell
+            colSpan={columns.filter((c: TableColumn) => !c.hidden).length}
+          >
+            {rowDetails}
+          </TableCell>
+        </TableRow>
       ) : null}
-      {columns
-        .filter((c: TableColumn) => !c.hidden)
-        .map((c: TableColumn, colIndex: number) => {
-          if (colIndex === 0) {
-            return (
-              <TableCell
-                key={`${c.accessor ? c.accessor : c.header}${index}`}
-                component="th"
-                id={labelId}
-                scope="row"
-                padding="default"
-              >
-                {props.insertMode &&
-                c.dataType === "ActionColumn" ? null : c.viewComponent ? (
-                  c.viewComponent(row, rowStateAndAction)
-                ) : (
-                  <EditableTableCell
-                    column={c}
-                    changeValue={(newValue: any) =>
-                      changeValue(newValue, c.accessor)
-                    }
-                    dataRow={row}
-                    editMode={editMode || props.insertMode}
-                  />
-                )}
-              </TableCell>
-            );
-          } else
-            return (
-              <TableCell key={`${c.accessor ? c.accessor : c.header}${index}`}>
-                {props.insertMode &&
-                c.dataType === "ActionColumn" ? null : c.viewComponent ? (
-                  c.viewComponent(row, rowStateAndAction)
-                ) : (
-                  <EditableTableCell
-                    column={c}
-                    changeValue={(newValue: any) =>
-                      changeValue(newValue, c.accessor)
-                    }
-                    dataRow={row}
-                    editMode={
-                      editMode || (props.insertMode ? props.insertMode : false)
-                    }
-                  />
-                )}
-              </TableCell>
-            );
-        })}
-    </TableRow>
+    </>
   );
 }

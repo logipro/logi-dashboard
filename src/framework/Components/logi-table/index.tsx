@@ -124,6 +124,12 @@ export interface LogiTableProps {
   tableToolbar?: (
     rowActionsAndStates: toolbarActionsAndState
   ) => React.ReactElement;
+  /**
+   * Set value to show loading indicator (useful when data is being managed from outside)
+   * @type {boolean}
+   * @memberof LogiTableProps
+   */
+  isRemoteLoading?: boolean;
 }
 
 export function LogiTable(props: LogiTableProps) {
@@ -156,7 +162,7 @@ export function LogiTable(props: LogiTableProps) {
         });
     } else {
       setData(props.data);
-      setIsLoading(false);
+      //setIsLoading(false);
     }
   }, [props.data, props.refreshData]);
 
@@ -219,7 +225,7 @@ export function LogiTable(props: LogiTableProps) {
                     }}
                   />
                 )}
-                {isLoading || isError ? (
+                {props.isRemoteLoading || isLoading || isError ? (
                   <TableRow>
                     <TableCell
                       colSpan={
@@ -230,7 +236,7 @@ export function LogiTable(props: LogiTableProps) {
                       align={"center"}
                     >
                       <div>
-                        {isLoading ? (
+                        {props.isRemoteLoading || isLoading ? (
                           <CircularProgress
                             size={30}
                             className={classes.progress}
