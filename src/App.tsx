@@ -2,10 +2,19 @@ import React, { Suspense } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Header from "./framework/layout/Header";
 import Sidebar from "./framework/layout/Sidebar";
-import { Route, Switch } from "react-router-dom";
+import { Route, Switch, withRouter } from "react-router-dom";
 import { useAuth } from "./framework/Contexts/AuthContext";
-import { Paper, Grid, Avatar, Typography } from "@material-ui/core";
+import {
+  Avatar,
+  Typography,
+  Card,
+  CardContent,
+  CardActions,
+  Button,
+  CardHeader
+} from "@material-ui/core";
 import ErrorBoundary from "./framework/helpers/ErrorBoundary";
+import { deepOrange } from "@material-ui/core/colors";
 
 const useStyle = makeStyles(theme => ({
   root: {
@@ -113,23 +122,55 @@ const App: React.FC = props => {
 
 export default App;
 
-function RouteNotFound(props: any) {
+const RouteNotFound = withRouter((props: any) => {
+  const Auth: any = useAuth();
   return (
-    <Paper className={props.classes.paper}>
-      <Grid container wrap="nowrap">
-        <Grid item>
-          <Avatar className={props.classes.avatar}>!</Avatar>
-        </Grid>
-        <Grid item xs>
-          <Typography>
-            Are you lost?! If you think this route should work then try to
-            login.
-          </Typography>
-        </Grid>
-      </Grid>
-    </Paper>
+    <Card>
+      <CardHeader
+        avatar={
+          <Avatar
+            style={{ backgroundColor: deepOrange[500] }}
+            aria-label="Error"
+          >
+            !
+          </Avatar>
+        }
+        title="Error Accessing this route"
+      />
+      <CardContent>
+        <Typography color="textSecondary" gutterBottom>
+          No access to this route
+        </Typography>
+        <Typography variant="body2" component="p">
+          Try to login if you believe you should have access to this app or go
+          back to dashboard
+        </Typography>
+      </CardContent>
+      <CardActions>
+        <Button
+          size="small"
+          onClick={() => {
+            Auth.showLogin();
+          }}
+          variant={"outlined"}
+          color={"primary"}
+        >
+          Login
+        </Button>
+        <Button
+          size="small"
+          onClick={() => {
+            props.history.push("/");
+          }}
+          variant={"outlined"}
+          color={"secondary"}
+        >
+          Back to dashboard
+        </Button>
+      </CardActions>
+    </Card>
   );
-}
+});
 
 //this map will keep all the already loaded components
 //TODO: empty this after user logs out or maybe move to Auth
