@@ -121,6 +121,7 @@ const Header: React.FC<props> = withRouter((props: any) => {
           LogiPro Dashboard
         </Typography>
         <div className={classes.grow} />
+        <div id="AppCmdBar" />
         <Tooltip title={"toggleTheme"} enterDelay={300}>
           <IconButton
             color="inherit"
