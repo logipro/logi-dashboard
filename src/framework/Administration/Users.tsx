@@ -68,7 +68,7 @@ const Users: React.FunctionComponent<IUsersProps> = props => {
               let updateStatement: String = "";
               for (let key in rowAsAndSs.newData) {
                 if (rowAsAndSs.newData[key] !== rowAsAndSs.oldData[key]) {
-                  updateStatement += `${key} = "${rowAsAndSs.newData[key]}" ,`;
+                  updateStatement += `${key} = '${rowAsAndSs.newData[key]}' ,`;
                 }
               }
               if (updateStatement.length > 0) {

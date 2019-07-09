@@ -29,7 +29,7 @@ export function AuthProvider(props: any) {
     setLoginVisible(false);
   }
   function logout() {
-    console.log("logging out");
+    //console.log("logging out");
     setToken(undefined);
     setAccessibleApps([]);
     setLoggedInUserID(-1);
@@ -93,8 +93,10 @@ export function AuthProvider(props: any) {
           if (response.status === 401) {
             //unauthorized
             //show login dialog (in case user can/wants to login)
+
             //store.dispatch(toggleIsLoginDialogOpen(true));
-            //TODO:
+            logout();
+            setLoginVisible(true);
             reject("unauthorized/relogin");
           }
           reject(response.statusText);
