@@ -6,6 +6,7 @@ import "typeface-roboto";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import { Provider as ThemeProvider } from "./framework/Contexts/ThemeContext";
 import { AuthProvider } from "./framework/Contexts/AuthContext";
+import { SnackbarProvider } from "./framework/Contexts/SnackbarContext";
 import { BrowserRouter as Router } from "react-router-dom";
 
 const USE_STRICT_MODE = false;
@@ -18,7 +19,9 @@ ReactDOM.render(
         {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
         <CssBaseline />
         <Router>
-          <App />
+          <SnackbarProvider>
+            <App />
+          </SnackbarProvider>
         </Router>
       </AuthProvider>
     </ThemeProvider>
