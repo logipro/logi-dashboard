@@ -21,9 +21,14 @@ function StatementCard(props) {
         <Typography className={classes.title} color="textSecondary">
           {dynamicProps.Title}
         </Typography>
-        <Typography variant="h5" component="h2">
-          {dynamicProps.Message}
-        </Typography>
+        {dynamicProps.Message ? (
+          <Typography variant="body2" component="p">
+            {dynamicProps.Message}
+          </Typography>
+        ) : null}
+        {dynamicProps.HTMLMessage ? (
+          <div dangerouslySetInnerHTML={{ __html: dynamicProps.HTMLMessage }} />
+        ) : null}
       </CardContent>
     </Card>
   );
