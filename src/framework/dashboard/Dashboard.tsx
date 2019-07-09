@@ -12,6 +12,7 @@ import Widget from "./Widget";
 import ReactDOM from "react-dom";
 import Edit from "@material-ui/icons/Edit";
 import Save from "@material-ui/icons/Save";
+import { useSnackbar } from "../../framework/Contexts/SnackbarContext";
 
 export interface IDashboardProps {}
 
@@ -19,7 +20,8 @@ const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
       flexGrow: 1,
-      overflowX: "hidden"
+      overflowX: "hidden",
+      height: "100%"
     }
   })
 );
@@ -27,6 +29,7 @@ const useStyles = makeStyles((theme: Theme) =>
 const Dashboard = function(props: IDashboardProps) {
   const classes = useStyles();
   const Auth: any = useAuth();
+  const snackbar: any = useSnackbar();
   const [isLoadingWidgets, setIsLoadingWidgets] = useState(false);
   const [widgets, setWidgets] = useState();
 
@@ -57,10 +60,10 @@ const Dashboard = function(props: IDashboardProps) {
       const response = await Auth.AuthenticatedServerCall(url, "POST", {
         Widgets: widgets
       });
-      console.log(response);
-      if (response == "saved") {
+      if (response === "saved") {
         setEditMode(false);
         setWidgetsBeforeEdit(undefined);
+        snackbar.openSnackbar("Widgets layout saved", "success");
       } else {
         console.log(response);
         setEditMode(false);
@@ -68,7 +71,7 @@ const Dashboard = function(props: IDashboardProps) {
         throw new Error("Something went wrong ...");
       }
     } catch (error) {
-      alert(error);
+      snackbar.openSnackbar("Failed Saving the layout", "error");
       console.log(error);
     }
   };
