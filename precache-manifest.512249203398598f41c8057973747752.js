@@ -1,15 +1,15 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "ca96a2091242514f9eda3161a500066b",
+    "revision": "510872fc3f5b8e23e0343e9f2b0057d1",
     "url": "/logi-dashboard/index.html"
   },
   {
-    "revision": "48e68b2d73454cdaac87",
+    "revision": "f294c2757b74721d12a5",
     "url": "/logi-dashboard/static/css/23.08861c3c.chunk.css"
   },
   {
-    "revision": "2f457e7e5f6bb36e89ea",
-    "url": "/logi-dashboard/static/js/0.c1a164a8.chunk.js"
+    "revision": "9ed56ad3ae8291c4e27d",
+    "url": "/logi-dashboard/static/js/0.2c49b15f.chunk.js"
   },
   {
     "revision": "69f062727c012843e56e",
@@ -32,12 +32,12 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/logi-dashboard/static/js/13.83d439a5.chunk.js"
   },
   {
-    "revision": "38f7ff73e53a1befddd3",
-    "url": "/logi-dashboard/static/js/14.edebe76e.chunk.js"
+    "revision": "15277f9e739c206e88a9",
+    "url": "/logi-dashboard/static/js/14.613d9355.chunk.js"
   },
   {
-    "revision": "f316de040b977b302be8",
-    "url": "/logi-dashboard/static/js/15.b3e0a501.chunk.js"
+    "revision": "3ec83a0f22e92e4a1509",
+    "url": "/logi-dashboard/static/js/15.2604ffbb.chunk.js"
   },
   {
     "revision": "a8c417ba3ae2d82a5036",
@@ -64,44 +64,44 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/logi-dashboard/static/js/20.3a755ac9.chunk.js"
   },
   {
-    "revision": "48e68b2d73454cdaac87",
-    "url": "/logi-dashboard/static/js/23.e7aee34e.chunk.js"
+    "revision": "f294c2757b74721d12a5",
+    "url": "/logi-dashboard/static/js/23.b2786030.chunk.js"
   },
   {
     "revision": "085fb7339b4ead0f20ca",
     "url": "/logi-dashboard/static/js/3.2733125c.chunk.js"
   },
   {
-    "revision": "5cd970e9fef23a758992",
-    "url": "/logi-dashboard/static/js/4.f577e963.chunk.js"
+    "revision": "427789276f61b86b763e",
+    "url": "/logi-dashboard/static/js/4.a80ed4a7.chunk.js"
   },
   {
-    "revision": "a765126cc238bcb09a40",
-    "url": "/logi-dashboard/static/js/5.ecfa3d06.chunk.js"
+    "revision": "f87111e092aa5d633e5d",
+    "url": "/logi-dashboard/static/js/5.bbb44b8c.chunk.js"
   },
   {
-    "revision": "8193b29a9de077cb0e06",
-    "url": "/logi-dashboard/static/js/6.01ce5611.chunk.js"
+    "revision": "c9c2fb41f8f84bb1e40c",
+    "url": "/logi-dashboard/static/js/6.1ea104df.chunk.js"
   },
   {
     "revision": "0b6cf6927d5a08b6c89a",
     "url": "/logi-dashboard/static/js/7.167a7d2a.chunk.js"
   },
   {
-    "revision": "3ab351bd55aa996bc1c8",
-    "url": "/logi-dashboard/static/js/8.d6741fd9.chunk.js"
+    "revision": "7465d177d9139f3b1b8d",
+    "url": "/logi-dashboard/static/js/8.17f9cc94.chunk.js"
   },
   {
-    "revision": "5e45dd176eba26624c77",
-    "url": "/logi-dashboard/static/js/9.f854e9de.chunk.js"
+    "revision": "f340e7e7604509ed5221",
+    "url": "/logi-dashboard/static/js/9.d6320133.chunk.js"
   },
   {
-    "revision": "a41620562da7728c78cf",
-    "url": "/logi-dashboard/static/js/main.cbd8a14b.chunk.js"
+    "revision": "43468a6ee2139301ae98",
+    "url": "/logi-dashboard/static/js/main.afe7a59e.chunk.js"
   },
   {
-    "revision": "735cfcf472b80d84d26c",
-    "url": "/logi-dashboard/static/js/runtime~main.cd9fbe2b.js"
+    "revision": "5adfe7004b265c6b068d",
+    "url": "/logi-dashboard/static/js/runtime~main.f37c6a07.js"
   },
   {
     "revision": "987b84570ea69ee660455b8d5e91f5f1",
