@@ -43,6 +43,9 @@ A. Any react component can be an app and Logi-dashboard will load them for users
 B. Add your App from Administartion/Apps management
 ![](https://thepracticaldev.s3.amazonaws.com/i/g93qxy3vzzelp4ou221z.png)
 You have to set the following for each app:
+
+---
+
 **Application**:Name of the App to be shown in the sidebar
 **ParentID**:If you want your App to be shown under a group set this
 **RouteName**:Set the relative Route for this App, Logi-dashboard will use this to load your component
@@ -50,3 +53,5 @@ You have to set the following for each app:
 **Props**:Send props to the app from here, for example let's say I want to have two different versions of _Users_ app one readonly and the other one full access. I create the same App twice in this table and set Props for one of them to {"Readonly":"true"} then the users.tsx can check for this at load and perform the required operations (in this case hide edit icons)
 **IsPublic**: set it to true if you want your app to be available before login. Dashboard must stay public
 **Icon** A (material UI icon)[https://material.io/tools/icons/] to be shown in the sidebar.
+
+---
