@@ -1,4 +1,5 @@
-#A fullstack React Material-UI dashboard
+# A fullstack React Material-UI dashboard
+
 ![dashScreenshot](https://thepracticaldev.s3.amazonaws.com/i/bsl2i3liq302bklsyao9.png)
 
 ## [demo](https://logipro.github.io/logi-dashboard/)
