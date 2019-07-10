@@ -1,44 +1,52 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+---
+title: Fullstack React Material Dashboard
+published: false
+description:
+tags: React, material-ui, nodejs, sqlite, nodejs, typescript
+---
 
-## Available Scripts
+#A fullstack React Material-UI dashboard
+![](https://thepracticaldev.s3.amazonaws.com/i/bsl2i3liq302bklsyao9.png)
 
-In the project directory, you can run:
+## What is it?!
 
-### `npm start`
+A **Work In Progress** fullstack micro framework (is framework the right word?!) which will give you basic authorization, authentication, routing and some general functionalities out of the box. So you can concentrate on developing your Apps and widgets and deliver them to your end users.
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+##Main features
 
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
+- Add/disable users, change users password, give/take Roles to users
+- Add/Remove Roles with access to different sets of apps and widgets
+- Create Widgets and add them to the framework to be shown on the dashboard (Maybe share the nice ones😀)
+- Create Apps (React components)
+- Have Public Apps and Widgets (No need for login to see these)
+- Each user can save his/her dashboard layout
+- Lazy loading of apps using react.lazy and suspense. Apps will only be loaded for users who have access to them.
 
-### `npm test`
+## What has been used?
 
-Launches the test runner in the interactive watch mode.<br>
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+**Frontend:**
+[Reactjs](https://reactjs.org/)
+[Material-UI](https://material-ui.com/)
+[React-Router](https://reacttraining.com/react-router/) for dynamic routing magic happening client side
+[TypeScript](https://typescriptlang.org) not 100% typescript as you will see some js files and a lot of js code but on it's way there!
+[logi-table](https://github.com/logipro/logi-dashboard/tree/master/src/framework/Components/logi-table): We looked for a good Material table and failed to find one that had everything I needed! So decided to develop my own. This table component lacks a lot of features at the moment and that's why it's not a npm package yet. Maybe one day when it covers more and is tested better we will publish this as it's own package, For now it will stay in a separate folder inside the dashboard!
 
-### `npm run build`
+**Backend:**
+[Nodejs](https://nodejs.org)
+[Express](https://expressjs.com/)
+[Passport](http://www.passportjs.org/) for authenticating together with express-jwt for giving tokens to logged in users and guests
+[Sqlite](https://www.sqlite.org/index.html) to be free from any DBMS installation we decided to use sqlite. of course for your app you can add connections to any other databases for the main business whilst the framework related persistence like Users, Roles, Apps,... are using the sqlite.
 
-Builds the app for production to the `build` folder.<br>
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## How do I add a new app?
 
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+A. Any react component can be an app and Logi-dashboard will load them for users with access. for an example look at [User.tsx](https://github.com/logipro/logi-dashboard/blob/master/src/framework/Administration/Users.tsx) which is the app that manages the users.
+B. Add your App from Administartion/Apps management
+![](https://thepracticaldev.s3.amazonaws.com/i/g93qxy3vzzelp4ou221z.png)
+You have to set the following for each app:
+**Application**:Name of the App to be shown in the sidebar
+**ParentID**:If you want your App to be shown under a group set this
+**RouteName**:Set the relative Route for this App, Logi-dashboard will use this to load your component
+**Component**:Relative path to App's component (relative from App.tsx)
+**Props**:Send props to the app from here, for example let's say I want to have two different versions of _Users_ app one readonly and the other one full access. I create the same App twice in this table and set Props for one of them to {"Readonly":"true"} then the users.tsx can check for this at load and perform the required operations (in this case hide edit icons)
+**IsPublic**: set it to true if you want your app to be available before login. Dashboard must stay public
+**Icon** A (material UI icon)[https://material.io/tools/icons/] to be shown in the sidebar.
