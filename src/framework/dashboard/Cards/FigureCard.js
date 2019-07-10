@@ -1,5 +1,5 @@
 import React from "react";
-import classnames from "classnames";
+import clsx from "clsx";
 import { Card, Icon, CircularProgress } from "@material-ui/core/";
 
 /* TODO: if the image doesn't exist at the moment it throws a fatal error, needs to be changed
@@ -57,7 +57,7 @@ class FigureCard extends React.Component {
         title={
           <div>
             <div
-              className={classnames("card-header", {
+              className={clsx("card-header", {
                 [this.props.dynamicProps.color]: true
               })}
             >
