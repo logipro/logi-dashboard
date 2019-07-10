@@ -91,7 +91,7 @@ const Roles: React.FunctionComponent<IRolesProps> = function(props) {
                 ) {
                   setIsLoadingRoles(true);
                   await deleteRole(row.RoleID);
-                  setRefreshTrigger(refreshTrigger ? refreshTrigger : 0 + 1);
+                  setRefreshTrigger(refreshTrigger => refreshTrigger + 1);
                   setIsLoadingRoles(false);
                 }
               }}
@@ -144,7 +144,7 @@ const Roles: React.FunctionComponent<IRolesProps> = function(props) {
                   setIsLoadingRoles(true);
                   const newData: any = actionsAndStates.insertedRecordData();
                   await insertRole(newData);
-                  setRefreshTrigger(refreshTrigger ? refreshTrigger : 0 + 1);
+                  setRefreshTrigger(refreshTrigger => refreshTrigger + 1);
                   actionsAndStates.discardInsertMode();
                   setIsLoadingRoles(false);
                 } catch (exception) {

@@ -8,10 +8,12 @@ import {
   LogiStandardToolbar
 } from "../Components/logi-table"; //"logi-table";
 import { StandardActions } from "../Components/logi-table/StandardActions";
+import { Value2SQLValue } from "../utils/helpers";
 
 interface IWidgetsProps {}
 
 const Widgets: React.FunctionComponent<IWidgetsProps> = function(props) {
+  console.log(props);
   const [widgets, setWidgets] = useState();
   const [isLoadingWidgets, setIsLoadingWidgets] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -38,7 +40,11 @@ const Widgets: React.FunctionComponent<IWidgetsProps> = function(props) {
         '${newData.Component ? newData.Component : null}' ,
         '${newData.Properties ? newData.Properties : null}' ,
         '${newData.Description.trim()}', 
-        ${newData.IsPublic ? newData.IsPublic : null}        
+        ${
+          newData.IsPublic !== undefined
+            ? Value2SQLValue.get("Boolean")(newData.IsPublic)
+            : 0
+        }        
       `
       });
       return true;
@@ -80,7 +86,7 @@ const Widgets: React.FunctionComponent<IWidgetsProps> = function(props) {
                 ) {
                   setIsLoadingWidgets(true);
                   await deleteWidget(row.WidgetID);
-                  setRefreshTrigger(refreshTrigger ? refreshTrigger : 0 + 1);
+                  setRefreshTrigger(refreshTrigger => refreshTrigger + 1);
                   setIsLoadingWidgets(false);
                 }
               }}
@@ -89,6 +95,11 @@ const Widgets: React.FunctionComponent<IWidgetsProps> = function(props) {
                 let updateStatement: String = "";
                 for (let key in rowAsAndSs.newData) {
                   if (rowAsAndSs.newData[key] !== rowAsAndSs.oldData[key]) {
+                    if (typeof rowAsAndSs.newData[key] === "boolean") {
+                      rowAsAndSs.newData[key] = Value2SQLValue.get("Boolean")(
+                        rowAsAndSs.newData.IsPublic
+                      );
+                    }
                     updateStatement += `${key} = '${
                       rowAsAndSs.newData[key]
                     }' ,`;
@@ -110,16 +121,12 @@ const Widgets: React.FunctionComponent<IWidgetsProps> = function(props) {
                   )
                     .then((r: any) => {
                       console.log(r);
-                      setRefreshTrigger(
-                        refreshTrigger ? refreshTrigger : 0 + 1
-                      );
+                      setRefreshTrigger(refreshTrigger => refreshTrigger + 1);
                     })
                     .catch((error: any) => {
                       console.log(error);
                       rowAsAndSs.discardEditMode();
-                      setRefreshTrigger(
-                        refreshTrigger ? refreshTrigger : 0 + 1
-                      );
+                      setRefreshTrigger(refreshTrigger => refreshTrigger + 1);
                     });
                 }
                 return Promise.resolve(true);
@@ -151,14 +158,14 @@ const Widgets: React.FunctionComponent<IWidgetsProps> = function(props) {
       dataType: "String"
     },
     {
+      header: "Is Public",
+      accessor: "IsPublic",
+      dataType: "Boolean"
+    },
+    {
       header: "Description",
       accessor: "Description",
       dataType: "String"
-    },
-    {
-      header: "IsPublic",
-      accessor: "IsPublic",
-      dataType: "Boolean"
     }
   ];
   return (

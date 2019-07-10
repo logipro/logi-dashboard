@@ -63,49 +63,67 @@ const App: React.FC = props => {
                     path={
                       app.Path +
                       `${
-                        app.params !== undefined && app.params !== null
+                        app.params !== undefined &&
+                        app.params !== null &&
+                        app.params.trim().length > 0
                           ? "/:param"
                           : ""
                       }`
                     }
                     render={() => (
                       <ErrorBoundary>
-                        <DynamicLoader component={app.Component} />
+                        <DynamicLoader
+                          component={app.Component}
+                          loadedProps={
+                            app.AppProps ? JSON.parse(app.AppProps) : null
+                          }
+                        />
                       </ErrorBoundary>
                     )}
                     key={key}
                   />
                 );
               } else if (app.childApps) {
-                var childRoutes = app.childApps.map((prop: any, key: any) => {
-                  if (
-                    prop.Path &&
-                    prop.Path !== "" &&
-                    prop.Component &&
-                    prop.Component !== ""
-                  ) {
-                    return (
-                      <Route
-                        exact
-                        path={
-                          prop.Path +
-                          `${
-                            prop.params !== undefined && prop.params !== null
-                              ? "/:param"
-                              : ""
-                          }`
-                        }
-                        render={() => (
-                          <ErrorBoundary>
-                            <DynamicLoader component={prop.Component} />
-                          </ErrorBoundary>
-                        )}
-                        key={key}
-                      />
-                    );
+                var childRoutes = app.childApps.map(
+                  (childApp: any, key: any) => {
+                    if (
+                      childApp.Path &&
+                      childApp.Path !== "" &&
+                      childApp.Component &&
+                      childApp.Component !== ""
+                    ) {
+                      return (
+                        <Route
+                          exact
+                          path={
+                            childApp.Path +
+                            `${
+                              childApp.params !== undefined &&
+                              childApp.params !== null &&
+                              childApp.params.trim().length > 0
+                                ? "/:param"
+                                : ""
+                            }`
+                          }
+                          render={() => (
+                            <ErrorBoundary>
+                              <DynamicLoader
+                                component={childApp.Component}
+                                loadedProps={
+                                  childApp.AppProps
+                                    ? JSON.parse(childApp.AppProps)
+                                    : null
+                                }
+                              />
+                            </ErrorBoundary>
+                          )}
+                          key={key}
+                        />
+                      );
+                    }
+                    return null;
                   }
-                  return null;
-                });
+                );
                 return childRoutes;
               } else return null;
             })}
@@ -191,7 +209,7 @@ const DynamicLoader = (props: any) => {
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <LazyComponent />
+      <LazyComponent loadedProps={props.loadedProps} />
     </Suspense>
   );
 };
