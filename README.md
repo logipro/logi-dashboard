@@ -12,6 +12,10 @@ or U: "admin" P: "test" for more accessible app
 
 _Note the database is in readonly mode so any attempt to change will fail_
 
+## [demo2](https://logidashboard.z19.web.core.windows.net/)
+
+No issues with routing on this one (hosted on Azure static websites)
+
 ## Setup
 
 ### Server
