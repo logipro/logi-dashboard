@@ -14,6 +14,7 @@ import { useTheme } from "@material-ui/styles";
 import AccountCircleIcon from "@material-ui/icons/AccountCircle";
 import { useAuth } from "../Contexts/AuthContext";
 import { withRouter } from "react-router-dom";
+import { Button } from "@material-ui/core";
 
 const drawerWidth = 240;
 
@@ -138,16 +139,9 @@ const Header: React.FC<props> = withRouter((props: any) => {
           </IconButton>
         </Tooltip>
         {Auth.LoggedInUserID < 0 ? (
-          <Tooltip title={"Login"} enterDelay={300}>
-            <IconButton
-              aria-haspopup="true"
-              color="inherit"
-              aria-label="Account Login"
-              onClick={() => Auth.showLogin()}
-            >
-              <AccountCircleIcon />
-            </IconButton>
-          </Tooltip>
+          <Button color="inherit" onClick={() => Auth.showLogin()}>
+            Login
+          </Button>
         ) : (
           <Tooltip title={"Logout"} enterDelay={300}>
             <IconButton
