@@ -39,6 +39,7 @@ export function AuthProvider(props: any) {
 
   async function authenticateUser(username: String, password: String) {
     try {
+      username = username.toLowerCase();
       setloginState("InProgress");
       const headers = {
         Accept: "application/json",
