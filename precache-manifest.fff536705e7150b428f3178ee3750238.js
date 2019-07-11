@@ -1,6 +1,6 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "0d38a4d725d5181763b6ea3631127f72",
+    "revision": "7b759c3158ce3bf6d4fe8610dbd66628",
     "url": "/logi-dashboard/index.html"
   },
   {
@@ -96,8 +96,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/logi-dashboard/static/js/9.0b2f5b9d.chunk.js"
   },
   {
-    "revision": "8ad402002a912f2ef182",
-    "url": "/logi-dashboard/static/js/main.f8519f2b.chunk.js"
+    "revision": "70e5b8a3523fe6314a4b",
+    "url": "/logi-dashboard/static/js/main.6df263e5.chunk.js"
   },
   {
     "revision": "3e0a7a48176a6002af91",
