@@ -5,6 +5,7 @@ type AuthContextType = {
   showLogin: Function;
   hideLogin: Function;
   LoggedInUserID: Number;
+  LoggedInUserName: String;
   AccessibleApps: Array<{}>;
   Token: String;
   AuthenticatedServerCall: Function;
@@ -16,6 +17,9 @@ const AuthContext = React.createContext<Partial<AuthContextType>>({});
 export function AuthProvider(props: any) {
   const [LoginVisible, setLoginVisible] = React.useState(false);
   const [LoggedInUserID, setLoggedInUserID] = React.useState<Number>(-1);
+  const [LoggedInUserName, setLoggedInUserName] = useState<String | undefined>(
+    undefined
+  );
   const [Token, setToken] = React.useState();
   const [initialLoad, setInitialLoad] = useState(true);
   const [initialLoadFailed, setInitialLoadFailed] = useState(false);
@@ -33,6 +37,7 @@ export function AuthProvider(props: any) {
     setToken(undefined);
     setAccessibleApps([]);
     setLoggedInUserID(-1);
+    setLoggedInUserName(undefined);
     //change the value for the get token to kick in
     setInitialLoad(true);
   }
@@ -62,11 +67,13 @@ export function AuthProvider(props: any) {
       const result = await rawResult.json();
       setToken(result["token"]);
       setLoggedInUserID(result["userID"]);
+      setLoggedInUserName(username);
       setloginState("Success");
       hideLogin();
     } catch (exception) {
       setloginState("Failed");
       setLoggedInUserID(-1);
+      setLoggedInUserName(undefined);
       //reset the token so will get new guest token
       setToken("");
     }
@@ -94,15 +101,11 @@ export function AuthProvider(props: any) {
           if (response.status === 401) {
             //unauthorized
             //show login dialog (in case user can/wants to login)
-
-            //store.dispatch(toggleIsLoginDialogOpen(true));
             logout();
             setLoginVisible(true);
             reject("unauthorized/relogin");
           }
           reject(response.statusText);
-          //toast.error("Error :" + response.statusText);
-          //throw new Error("Something went wrong ...");
         }
       })
     );
@@ -128,6 +131,7 @@ export function AuthProvider(props: any) {
         const res = await result.json();
         setToken(res["token"]);
         setLoggedInUserID(-1);
+        setLoggedInUserName("guest");
         setInitialLoad(false);
       } catch (exception) {
         console.log(exception);
@@ -211,6 +215,7 @@ export function AuthProvider(props: any) {
         showLogin,
         hideLogin,
         LoggedInUserID,
+        LoggedInUserName,
         AccessibleApps,
         Token,
         AuthenticatedServerCall: AuthenticatedServerCall,
